@@ -54,6 +54,15 @@ body::before{
   background:rgba(158,98,16,.12); border:1px solid rgba(158,98,16,.35);
   color:var(--amber-l); margin-left:10px; letter-spacing:.04em;
 }
+.logo-badge-btn{
+  font-family:var(--font-mono); font-size:9px; font-weight:400;
+  padding:2px 8px; border-radius:20px;
+  background:rgba(22,132,94,.12); border:1px solid rgba(22,132,94,.45);
+  color:#4DB893; margin-left:6px; letter-spacing:.04em;
+  cursor:pointer; transition:background .15s;
+  text-decoration:none; display:inline-block;
+}
+.logo-badge-btn:hover{background:rgba(22,132,94,.28);}
 .topbar-center{flex:1;display:flex;align-items:center;justify-content:center;gap:10px}
 .topbar-title{font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:.06em}
 .status-dot{
@@ -295,7 +304,7 @@ body::before{
 <body>
 
 <div class="topbar">
-  <div class="logo"><span>JORIY HOLAT</span> · IT INFRASTRUCTURE<span class="logo-badge">AS-IS · LEGACY</span></div>
+  <div class="logo"><span>JORIY HOLAT</span> · IT INFRASTRUCTURE<span class="logo-badge">AS-IS · LEGACY</span><a class="logo-badge-btn" href="index.html" target="_blank">TO-BE ARCHITECTURE</a></div>
   <div class="topbar-center">
     <span class="status-dot"></span>
     <span class="topbar-title">POINT-TO-POINT · NO MIDDLEWARE · AS-IS LEGACY</span>
@@ -369,25 +378,17 @@ const ABS_INFO = {
 
 const NODES = {
   /* CHANNELS — top */
-  mobile:{label:'Mobile App',sub:'iOS · Android',x:120,y:80,w:140,h:52,cat:'channel',
+  mobile:{label:'Mobile App',sub:'iOS · Android',x:280,y:80,w:140,h:52,cat:'channel',
     purpose:"Mijozlarning mobil banking ilovasi. Joriy holatda Middleware yo'q — to'g'ridan-to'g'ri ABS bilan va ba'zi tashqi tizimlar (Uzcard/Humo) bilan alohida API orqali bog'lanadi.",
     features:['ABS bilan to\'g\'ridan-to\'g\'ri REST/SOAP','Uzcard/Humo SDK alohida integratsiya','Push notifikatsiyalar','Har bir tashqi xizmat uchun alohida adapter']
   },
-  web:{label:'Web Portal',sub:'Internet banking',x:290,y:80,w:140,h:52,cat:'channel',
+  web:{label:'Web Portal',sub:'Internet banking',x:460,y:80,w:140,h:52,cat:'channel',
     purpose:"Internet banking portali. ABS va tashqi tizimlar (SWIFT, Didox) bilan to'g'ridan-to'g'ri integratsiya.",
     features:['ABS bilan direct API','SWIFT/Didox alohida bog\'lanish','MT940 statement eksport','Server-side SOAP wrappers']
   },
-  atm_ch:{label:'ATM/POS ch.',sub:'ISO 8583',x:460,y:80,w:140,h:52,cat:'channel',
+  atm_ch:{label:'ATM/POS ch.',sub:'ISO 8583',x:640,y:80,w:140,h:52,cat:'channel',
     purpose:"ATM va POS terminallari ISO 8583 protokoli bilan to'g'ridan-to'g'ri ABS va Uzcard/Humo switchi bilan ulanadi. Middleware yo'q — ABS off-line bo'lsa to'lov to'xtaydi.",
     features:['ISO 8583 native','Uzcard/Humo bilan direct switching','ABS off-line → tranzaksiya rad etiladi','SAF/STIP rejimi yo\'q']
-  },
-  corp_api:{label:'Corp API',sub:'B2B · ERP',x:630,y:80,w:140,h:52,cat:'channel',
-    purpose:"Korporativ mijozlar va 1C/ERP tizimlari uchun B2B API. Har bir korporativ uchun alohida konnektor yoziladi.",
-    features:['REST + SOAP fallback','Har bir mijoz uchun bespoke','Token management ABS ichida','Rate limiting cheklangan']
-  },
-  chat:{label:'Chat / USSD',sub:'USSD · Bot',x:800,y:80,w:140,h:52,cat:'channel',
-    purpose:"USSD gateway va Telegram bot. To'g'ridan-to'g'ri ABS bilan bog'lanadi.",
-    features:['USSD *123# gateway','Telegram bot — ABS API','Cheklangan operatsiyalar','24/7 balans so\'rovi']
   },
 
   /* INTERNAL — inside ABS */
@@ -555,48 +556,38 @@ function addLine(d, col, w=1.5, marker='', dash=false){
 }
 
 function buildConnectors(){
-  const absTop = 170;
-  const absRight = 880;
-  const blue = '#6BA8E0';
-  const amber = '#EAA83A';
-  const r = 5;
+  const absTop    = 170;
+  const absRight  = 880;
+  const blue      = '#6BA8E0';
+  const amber     = '#EAA83A';
 
-  // Channel center x
-  const cx = {mobile:190, web:360, atm_ch:530, corp_api:700, chat:870};
+  // Channel centers (new positions)
+  const mobileCx  = 350;   // x:280 + w:140/2
+  const webCx     = 530;   // x:460 + w:140/2
+  const atmCx     = 710;   // x:640 + w:140/2
+  const chanBottom = 132;  // y:80 + h:52
 
-  // === 1) Channel → ABS (5 vertical lines, blue) ===
-  Object.values(cx).forEach(x => {
-    addLine(`M${x},132 L${x},${absTop}`, blue, 2.4, 'arr-blue');
+  // Yellow block center Y values
+  const yTies = [191, 263, 335, 407, 479, 551];
+
+  // === 1) Channel → ABS: 3 vertical blue lines (downward) ===
+  [mobileCx, webCx, atmCx].forEach(x => {
+    addLine(`M${x},${chanBottom} L${x},${absTop}`, blue, 2.4, 'arr-blue');
   });
 
-  // === 2) Channel → Yellow (6 lines, reverse-nested top routing, blue) ===
-  // Each line: UP from channel top → RIGHT along its top-lane → DOWN at its
-  // descent column (right of yellows) → LEFT into yellow's right edge.
-  // Lanes assigned so NO line crosses any other.
-  const links = [
-    // src exit x ,  laneY , colX , target y (yellow center)
-    {sx:cx.mobile,    sy:80,  laneY:68, colX:1172, ty:191}, // mobile   → uzcard
-    {sx:cx.web,       sy:80,  laneY:56, colX:1188, ty:263}, // web      → swift
-    {sx:660,          sy:80,  laneY:44, colX:1204, ty:335}, // corp_api → cbu
-    {sx:cx.atm_ch,    sy:80,  laneY:32, colX:1220, ty:407}, // atm_ch   → paynet
-    {sx:740,          sy:80,  laneY:20, colX:1236, ty:479}, // corp_api → didox
-    {sx:cx.chat,      sy:80,  laneY:8,  colX:1252, ty:551}  // chat     → tifc
-  ];
-  links.forEach(l => {
-    const p =
-      `M${l.sx},${l.sy} ` +
-      `L${l.sx},${l.laneY+r} ` +
-      `Q${l.sx},${l.laneY} ${l.sx+r},${l.laneY} ` +
-      `L${l.colX-r},${l.laneY} ` +
-      `Q${l.colX},${l.laneY} ${l.colX},${l.laneY+r} ` +
-      `L${l.colX},${l.ty-r} ` +
-      `Q${l.colX},${l.ty} ${l.colX-r},${l.ty} ` +
-      `L1160,${l.ty}`;
-    addLine(p, blue, 1.9, 'arr-blue');
-  });
+  // === 2) Mobile → Yellow spine (solid blue, spine at x=888) ===
+  // Trunk: exits from channel bottom, routes right along y=132 to spine, then down
+  const mSpineX = 888;
+  addLine(`M${mobileCx},${chanBottom} L${mSpineX},${chanBottom} L${mSpineX},551`, blue, 1.6);
+  yTies.forEach(ty => addLine(`M${mSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue'));
 
-  // === 3) ABS → Yellow (6 horizontal lines, amber) ===
-  [191, 263, 335, 407, 479, 551].forEach(ty => {
+  // === 3) Web → Yellow spine (dashed blue, spine at x=904) ===
+  const wSpineX = 904;
+  addLine(`M${webCx},${chanBottom} L${wSpineX},${chanBottom} L${wSpineX},551`, blue, 1.6, '', true);
+  yTies.forEach(ty => addLine(`M${wSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue', true));
+
+  // === 4) ABS → Yellow: 6 amber horizontal lines ===
+  yTies.forEach(ty => {
     addLine(`M${absRight},${ty} L980,${ty}`, amber, 2.4, 'arr-amber');
   });
 }
