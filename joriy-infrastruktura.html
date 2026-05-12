@@ -342,7 +342,6 @@ body::before{
       </div>
     </div>
 
-    <div id="legend"></div>
   </div>
 </div>
 
@@ -561,33 +560,34 @@ function buildConnectors(){
   const blue      = '#6BA8E0';
   const amber     = '#EAA83A';
 
-  // Channel centers (new positions)
-  const mobileCx  = 350;   // x:280 + w:140/2
-  const webCx     = 530;   // x:460 + w:140/2
-  const atmCx     = 710;   // x:640 + w:140/2
-  const chanBottom = 132;  // y:80 + h:52
+  // Channel centers
+  const mobileCx  = 350;
+  const webCx     = 530;
+  const atmCx     = 710;
+  const chanBottom = 132;
 
-  // Yellow block center Y values
-  const yTies = [191, 263, 335, 407, 479, 551];
+  // External nodes: y positions are [164,236,308,380,452,524], h=54
+  // Blue lines enter at top of each node (y+14), amber at center (y+27)
+  const yBlue  = [178, 250, 322, 394, 466, 538];
+  const yAmber = [191, 263, 335, 407, 479, 551];
 
-  // === 1) Channel → ABS: 3 vertical blue lines (downward) ===
+  // === 1) Channel → ABS: 3 vertical blue lines ===
   [mobileCx, webCx, atmCx].forEach(x => {
     addLine(`M${x},${chanBottom} L${x},${absTop}`, blue, 2.4, 'arr-blue');
   });
 
-  // === 2) Mobile → Yellow spine (solid blue, spine at x=888) ===
-  // Trunk: exits from channel bottom, routes right along y=132 to spine, then down
+  // === 2) Mobile → External: solid blue spine ===
   const mSpineX = 888;
-  addLine(`M${mobileCx},${chanBottom} L${mSpineX},${chanBottom} L${mSpineX},551`, blue, 1.6);
-  yTies.forEach(ty => addLine(`M${mSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue'));
+  addLine(`M${mobileCx},${chanBottom} L${mSpineX},${chanBottom} L${mSpineX},${yBlue[5]}`, blue, 1.6);
+  yBlue.forEach(ty => addLine(`M${mSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue'));
 
-  // === 3) Web → Yellow spine (dashed blue, spine at x=904) ===
+  // === 3) Web → External: dashed blue spine ===
   const wSpineX = 904;
-  addLine(`M${webCx},${chanBottom} L${wSpineX},${chanBottom} L${wSpineX},551`, blue, 1.6, '', true);
-  yTies.forEach(ty => addLine(`M${wSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue', true));
+  addLine(`M${webCx},${chanBottom} L${wSpineX},${chanBottom} L${wSpineX},${yBlue[5]}`, blue, 1.6, '', true);
+  yBlue.forEach(ty => addLine(`M${wSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue', true));
 
-  // === 4) ABS → Yellow: 6 amber horizontal lines ===
-  yTies.forEach(ty => {
+  // === 4) ABS → External: amber horizontal lines ===
+  yAmber.forEach(ty => {
     addLine(`M${absRight},${ty} L980,${ty}`, amber, 2.4, 'arr-amber');
   });
 }
@@ -712,7 +712,6 @@ document.getElementById('absHub').addEventListener('click', (e)=>{
 setupDefs();
 buildNodes();
 buildConnectors();
-buildLegend();
 scaleCanvas();
 window.addEventListener('resize', scaleCanvas);
 </script>
