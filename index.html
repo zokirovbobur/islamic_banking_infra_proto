@@ -1018,6 +1018,9 @@ function makePathW(d, col, w=1, marker='', cat='') {
 }
 
 function buildConnectors() {
+  // Clear pre-rendered static paths/lines, keep defs (markers)
+  Array.from(svg.querySelectorAll('path, line')).forEach(el => el.remove());
+
   const mw = N.middleware;
   const cx  = mw.x + mw.w/2;   // 630
   const cy  = mw.y + mw.h/2;   // 338
@@ -3330,9 +3333,9 @@ function closePanel() {
 ════════════════════════════════════════════════════════════ */
 const FILTER_SHOW = {
   all:        ['hub','channel','internal','external','compliance','gateway'],
-  internal:   ['hub','internal','gateway'],
-  external:   ['hub','external','gateway'],
-  compliance: ['hub','compliance','gateway'],
+  internal:   ['hub','internal'],
+  external:   ['hub','external'],
+  compliance: ['hub','compliance'],
   channel:    ['hub','channel','gateway'],
 };
 
