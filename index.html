@@ -1004,7 +1004,7 @@ function makePath(d, col='#1A1A2E', dash=false) {
   svg.appendChild(p);
 }
 
-function makePathW(d, col, w=1, marker='') {
+function makePathW(d, col, w=1, marker='', cat='') {
   const p = document.createElementNS('http://www.w3.org/2000/svg','path');
   p.setAttribute('d', d);
   p.setAttribute('stroke', col);
@@ -1012,7 +1012,9 @@ function makePathW(d, col, w=1, marker='') {
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke-opacity', '1');
   if (marker) p.setAttribute('marker-end', `url(#${marker})`);
+  if (cat) p.dataset.cat = cat;
   svg.appendChild(p);
+  return p;
 }
 
 function buildConnectors() {
@@ -1029,33 +1031,33 @@ function buildConnectors() {
   const amberCol  = '#EAA83A';  // external (right) nodes — bright amber
   const redCol    = '#D06060';  // bottom compliance lines
 
-  // ── GW bottom → Hub top (vertical, purple)
+  // ── GW bottom → Hub top (vertical, blue)
   const gw = N.gateway;
   const gwBot = gw.y + gw.h;
-  makePathW(`M${cx},${gwBot} L${cx},${mTy}`, blueCol, 2, 'arr-blue');
+  makePathW(`M${cx},${gwBot} L${cx},${mTy}`, blueCol, 2, 'arr-blue', 'channel');
 
-  // ── Channels → GW top (thin, dim)
+  // ── Channels → GW top
   ['mobile','web','atm_ch','corp_api','chat'].forEach(id => {
     const d = N[id];
     const ncx = d.x + d.w/2;
-    makePathW(`M${ncx},${d.y+d.h} L${ncx},${gw.y}`, blueCol, 2, 'arr-blue');
+    makePathW(`M${ncx},${d.y+d.h} L${ncx},${gw.y}`, blueCol, 2, 'arr-blue', 'channel');
   });
 
-  // ── Hub left edge → Left internals (reversed: middleware → internal)
+  // ── Hub left edge → Left internals
   const elbL = 245;
   ['core_banking','crm','dwh','card_mgmt','cash_mgmt','billing','intl_transfer'].forEach(id => {
     const d = N[id];
     const rx = d.x + d.w;
     const ncy = d.y + d.h/2;
-    makePathW(`M${mLx},${cy} L${elbL},${cy} L${elbL},${ncy} L${rx},${ncy}`, greenCol, 2, 'arr-green');
+    makePathW(`M${mLx},${cy} L${elbL},${cy} L${elbL},${ncy} L${rx},${ncy}`, greenCol, 2, 'arr-green', 'internal');
   });
 
-  // ── Hub right edge → Right externals (reversed: middleware → external)
+  // ── Hub right edge → Right externals
   const elbR = 1005;
   ['uzcard','swift','cbu','paynet','didox','tifc'].forEach(id => {
     const d = N[id];
     const ncy = d.y + d.h/2;
-    makePathW(`M${mRx},${cy} L${elbR},${cy} L${elbR},${ncy} L${d.x},${ncy}`, amberCol, 2, 'arr-amber');
+    makePathW(`M${mRx},${cy} L${elbR},${cy} L${elbR},${ncy} L${d.x},${ncy}`, amberCol, 2, 'arr-amber', 'external');
   });
 
   // ── Compliance bus + trunk
@@ -1069,17 +1071,18 @@ function buildConnectors() {
   busLine.setAttribute('x2', busX2); busLine.setAttribute('y2', busY);
   busLine.setAttribute('stroke', redCol);
   busLine.setAttribute('stroke-width', '2');
+  busLine.dataset.cat = 'compliance';
   svg.appendChild(busLine);
 
-  // hub bottom → bus center trunk (no arrowhead on trunk)
+  // hub bottom → bus center trunk
   const busCx = (busX1 + busX2) / 2;
-  makePathW(`M${cx},${mBy} L${cx},${busY} L${busCx},${busY}`, redCol, 2);
+  makePathW(`M${cx},${mBy} L${cx},${busY} L${busCx},${busY}`, redCol, 2, '', 'compliance');
 
-  // bus → node tops (reversed: bus → compliance nodes)
+  // bus → compliance nodes
   ['aml','sharia_core','atm_mgmt','incident'].forEach(id => {
     const d = N[id];
     const ncx = d.x + d.w/2;
-    makePathW(`M${ncx},${busY} L${ncx},${d.y}`, redCol, 2, 'arr-red');
+    makePathW(`M${ncx},${busY} L${ncx},${d.y}`, redCol, 2, 'arr-red', 'compliance');
   });
 }
 
@@ -3334,14 +3337,27 @@ const FILTER_SHOW = {
 };
 
 function setFilter(btn, f) {
+  // Toggle: clicking an already-active non-all button resets to 'all'
+  if (f !== 'all' && btn.classList.contains('active')) {
+    f = 'all';
+    btn = document.querySelector('.filter-btn[data-f="all"]');
+  }
   document.querySelectorAll('.filter-btn').forEach(b =>
     b.classList.toggle('active', b === btn));
+
   const show = FILTER_SHOW[f] || FILTER_SHOW.all;
   Object.entries(N).forEach(([id, d]) => {
     const el = document.getElementById('node-' + id);
     if (!el) return;
     el.classList.toggle('dimmed', !show.includes(d.cat));
   });
+
+  // Filter SVG lines by data-cat
+  document.querySelectorAll('#svg-lines path[data-cat], #svg-lines line[data-cat]').forEach(el => {
+    const visible = f === 'all' || el.dataset.cat === f;
+    el.style.opacity = visible ? '1' : '0.08';
+  });
+
   closePanel();
 }
 
