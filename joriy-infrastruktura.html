@@ -305,10 +305,7 @@ body::before{
 
 <div class="topbar">
   <div class="logo"><span>AS-IS</span> · IT INFRA<a class="logo-badge-btn" href="index.html" target="_blank">TO-BE ARCHITECTURE</a></div>
-  <div class="topbar-center">
-    <span class="status-dot"></span>
-    <span class="topbar-title">POINT-TO-POINT · NO MIDDLEWARE · AS-IS LEGACY</span>
-  </div>
+  <div class="topbar-center"></div>
   <div class="filters">
     <button class="filter-btn active" data-f="all" onclick="setFilter(this,'all')">Hammasi</button>
     <button class="filter-btn" data-f="channel" onclick="setFilter(this,'channel')">Kanallar</button>
@@ -367,11 +364,11 @@ const ABS_INFO = {
     risk:'Modullar bir-biriga qattiq bog\'langan — bir modul yangilanishi butun tizimga ta\'sir qiladi.'
   },
   NCI:{
-    name:'NCI — Next Core Infrastructure',
-    vendor:'Mintaqaviy banking software provider',
-    desc:"Arzonroq, customizable monolit ABS. Barcha ichki va compliance modullari shu tizim doirasida sozlangan — alohida microservice arxitekturasi yo'q.",
-    modules:'Modular monolit · 200+ konfiguratsiya parametri',
-    risk:'Yangi integratsiyalar har biri uchun alohida ADB konnektor ishlab chiqilishi kerak.'
+    name:'Smart-Bank — Integrallashgan Bank Tizimi',
+    vendor:"Intelligent Solutions — Toshkent, O'zbekiston",
+    desc:"Zamonaviy bank operatsiyalarini moslashuvchan konfiguratsiya imkoniyatlari bilan avtomatlashtiruvchi integrallashgan bank tizimi. Oracle platformasida uch bosqichli mijoz-server arxitekturasi asosida ishlaydi. Ko'p filiallik va ko'p valyutali operatsiyalarni qo'llab-quvvatlaydi.",
+    modules:"Administrator · Operatsion kun boshqaruvi · Kreditlar va depozitlar · Xalqaro hisob-kitoblar · Valyuta konvertatsiyasi · Umumiy buxgalteriya · Qimmatli qog'ozlar · Naqd pul muomalasi · Elektron to'lovlar · Kommunal to'lovlar · Hisobotlar · Risk menejment · Likvidlik tahlili",
+    risk:"Oracle platformasiga qattiq bog'liqlik — infratuzilma xarajatlari yuqori. Islomiy moliya modullari standart tarkibda yo'q, alohida sozlash talab etiladi."
   }
 };
 
@@ -391,7 +388,7 @@ const NODES = {
   },
 
   /* INTERNAL — inside ABS */
-  crm:{label:'CRM',sub:'Unison / Bitrix',cat:'internal',
+  crm:{label:'CRM',sub:'',cat:'internal',
     purpose:"Mijoz munosabatlari moduli — ABS ichida joylashgan. KYC, lead va complaint workflow.",
     features:['Lead funnel','KYC workflow','360° mijoz profili','Branch tarmog\'i'],
     inside:'ABS · iABS/NCI'
@@ -500,7 +497,7 @@ function buildNodes(){
   });
   // ABS internal modules
   const intGrid = document.getElementById('intGrid');
-  ['crm','dwh','card_mgmt','cash_mgmt','billing','intl_transfer'].forEach(id=>{
+  ['crm','card_mgmt','cash_mgmt','billing','intl_transfer'].forEach(id=>{
     const d = NODES[id];
     const el = document.createElement('div');
     el.className = 'abs-card abs-card-int';
@@ -514,7 +511,7 @@ function buildNodes(){
   intGrid.style.gridTemplateColumns = 'repeat(3,1fr)';
 
   const comGrid = document.getElementById('comGrid');
-  ['aml','sharia_core','atm_mgmt','incident'].forEach(id=>{
+  ['aml','atm_mgmt','incident'].forEach(id=>{
     const d = NODES[id];
     const el = document.createElement('div');
     el.className = 'abs-card abs-card-com';
@@ -581,12 +578,7 @@ function buildConnectors(){
   addLine(`M${mobileCx},${chanBottom} L${mSpineX},${chanBottom} L${mSpineX},${yBlue[5]}`, blue, 1.6);
   yBlue.forEach(ty => addLine(`M${mSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue'));
 
-  // === 3) Web → External: dashed blue spine ===
-  const wSpineX = 904;
-  addLine(`M${webCx},${chanBottom} L${wSpineX},${chanBottom} L${wSpineX},${yBlue[5]}`, blue, 1.6, '', true);
-  yBlue.forEach(ty => addLine(`M${wSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue', true));
-
-  // === 4) ABS → External: amber horizontal lines ===
+  // === 3) ABS → External: amber horizontal lines ===
   yAmber.forEach(ty => {
     addLine(`M${absRight},${ty} L980,${ty}`, amber, 2.4, 'arr-amber');
   });
