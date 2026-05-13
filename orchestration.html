@@ -705,6 +705,13 @@ function CanvasEditor({service, onBack, onPublishRequest, onShowRuns, onShowVers
   const canvasRef=useRef(null);
   const selectedNode=nodes.find(n=>n.id===selectedId);
 
+  // Global mouseup — sichqoncha canvas'dan tashqarida yoki port ustida qo'yib yuborilsa ham drag to'xtaydi
+  useEffect(()=>{
+    const up=()=>{ dragRef.current=null; panRef.current=null; };
+    window.addEventListener('mouseup',up);
+    return ()=>window.removeEventListener('mouseup',up);
+  },[]);
+
   const handleNodeMouseDown=(e,nodeId)=>{
     e.stopPropagation();
     if(connectFrom) return;
@@ -725,11 +732,14 @@ function CanvasEditor({service, onBack, onPublishRequest, onShowRuns, onShowVers
     const rect=canvasRef.current?.getBoundingClientRect();
     if(rect) setMousePos({x:e.clientX-rect.left-pan.x,y:e.clientY-rect.top-pan.y});
     if(dragRef.current){
-      const dx=e.clientX-dragRef.current.sx, dy=e.clientY-dragRef.current.sy;
-      setNodes(prev=>prev.map(n=>n.id===dragRef.current.nodeId?{...n,x:dragRef.current.nx+dx,y:dragRef.current.ny+dy}:n));
+      // dragRef ni avval mahalliy o'zgaruvchiga olamiz — setNodes callback chaqirilguncha null bo'lib qolmasin
+      const drag=dragRef.current;
+      const dx=e.clientX-drag.sx, dy=e.clientY-drag.sy;
+      setNodes(prev=>prev.map(n=>n.id===drag.nodeId?{...n,x:drag.nx+dx,y:drag.ny+dy}:n));
     } else if(panRef.current){
-      const dx=e.clientX-panRef.current.sx, dy=e.clientY-panRef.current.sy;
-      setPan({x:panRef.current.px+dx,y:panRef.current.py+dy});
+      const pan2=panRef.current;
+      const dx=e.clientX-pan2.sx, dy=e.clientY-pan2.sy;
+      setPan({x:pan2.px+dx,y:pan2.py+dy});
     }
   };
 
@@ -742,6 +752,9 @@ function CanvasEditor({service, onBack, onPublishRequest, onShowRuns, onShowVers
 
   const handlePortIn=(e,nodeId)=>{
     e.stopPropagation();
+    // Port ustida mouseup bo'lsa drag ham to'xtashi kerak (global listener bilan birga ikki qatlam himoya)
+    dragRef.current=null;
+    panRef.current=null;
     if(connectFrom&&connectFrom!==nodeId){
       const exists=edges.find(ed=>ed.from===connectFrom&&ed.to===nodeId);
       if(!exists){
