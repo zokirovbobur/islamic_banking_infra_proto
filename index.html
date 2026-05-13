@@ -1630,8 +1630,10 @@ function renderWebPanel(optKey) {
     </div>
     <div class="divider" style="margin:10px -20px"></div>
     <div class="prow"><div class="prow-lbl">Holat</div>
-      <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
-      ${opt.demoUrl ? `<button class="demo-btn" onclick="window.open('${opt.demoUrl}','_blank')"><svg viewBox="0 0 20 20"><polygon points="6,3 18,10 6,17"/></svg>DEMO</button>` : ''}
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
+        ${opt.demoUrl ? `<button class="demo-btn" onclick="window.open('${opt.demoUrl}','_blank')"><svg viewBox="0 0 20 20"><polygon points="6,3 18,10 6,17"/></svg>DEMO</button>` : ''}
+      </div>
     </div>
   `;
 }
