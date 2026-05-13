@@ -138,8 +138,9 @@ body::before{
   margin-left:6px;letter-spacing:.04em;
   cursor:pointer;transition:background .15s;
   text-decoration:none;display:inline-block;
+  animation:pulse-amber 2s ease-out infinite;
 }
-.logo-badge-btn:hover{background:rgba(158,98,16,.28);}
+.logo-badge-btn:hover{background:rgba(158,98,16,.28);animation-play-state:paused;}
 .topbar-center{
   flex:1;display:flex;align-items:center;justify-content:center;gap:10px;
 }
@@ -494,8 +495,25 @@ body::before{
 .demo-close-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:5px 16px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.07em;transition:background .15s;}
 .demo-close-btn:hover{background:rgba(255,255,255,.28);}
 .demo-iframe{flex:1;border:none;width:100%;background:#fff;}
-.demo-btn{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:3px 14px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;cursor:pointer;border:1px solid rgba(6,77,53,.45);background:rgba(6,77,53,.13);color:#0FA;transition:all .18s;}
+.demo-btn{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:5px 14px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.08em;cursor:pointer;border:1px solid rgba(77,184,147,.55);background:rgba(77,184,147,.13);color:#4DB893;transition:all .18s;animation:pulse-green 2s ease-out infinite;}
+.demo-btn:hover{background:rgba(77,184,147,.25);animation-play-state:paused;}
 .demo-btn svg{width:13px;height:13px;fill:currentColor;}
+.orch-demo-btn{animation:pulse-green 2s ease-out infinite;}
+.orch-demo-btn:hover{animation-play-state:paused;}
+@keyframes pulse-amber{
+  0%  {box-shadow:0 0 0 0   rgba(212,148,74,.7)}
+  35% {box-shadow:0 0 0 6px rgba(212,148,74,0)}
+  65% {box-shadow:0 0 0 0   rgba(212,148,74,0)}
+  82% {box-shadow:0 0 0 3px rgba(212,148,74,.25)}
+  100%{box-shadow:0 0 0 0   rgba(212,148,74,0)}
+}
+@keyframes pulse-green{
+  0%  {box-shadow:0 0 0 0   rgba(77,184,147,.7)}
+  35% {box-shadow:0 0 0 6px rgba(77,184,147,0)}
+  65% {box-shadow:0 0 0 0   rgba(77,184,147,0)}
+  82% {box-shadow:0 0 0 3px rgba(77,184,147,.25)}
+  100%{box-shadow:0 0 0 0   rgba(77,184,147,0)}
+}
 </style>
 </head>
 <body data-cc-id="cc-1" style="cursor: default; background-color: rgb(8, 8, 16);">
@@ -2850,7 +2868,7 @@ function openSubPanel(subId) {
   document.getElementById('pFeatures').innerHTML  = d.features.map(f=>`<li>${f}</li>`).join('');
   document.getElementById('pConnects').innerHTML  = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
   const demoBtn = subId === 'bpm'
-    ? `<a href="orchestration.html" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:4px 14px;border-radius:4px;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.08em;cursor:pointer;border:1px solid rgba(22,132,94,.55);background:rgba(22,132,94,.13);color:#4DB893;text-decoration:none;transition:all .18s;" onmouseover="this.style.background='rgba(22,132,94,.28)';this.style.borderColor='rgba(22,132,94,.9)'" onmouseout="this.style.background='rgba(22,132,94,.13)';this.style.borderColor='rgba(22,132,94,.55)'">&#9654; DEMO</a>`
+    ? `<a href="orchestration.html" target="_blank" class="orch-demo-btn" style="display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:5px 14px;border-radius:4px;font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;cursor:pointer;border:1px solid rgba(22,132,94,.55);background:rgba(22,132,94,.13);color:#4DB893;text-decoration:none;transition:all .18s;" onmouseover="this.style.background='rgba(22,132,94,.28)';this.style.borderColor='rgba(22,132,94,.9)'" onmouseout="this.style.background='rgba(22,132,94,.13)';this.style.borderColor='rgba(22,132,94,.55)'">&#9654; DEMO</a>`
     : '';
   document.getElementById('pStatus').innerHTML    =
     `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>${demoBtn}</div>`;
