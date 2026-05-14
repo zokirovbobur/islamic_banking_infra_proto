@@ -849,6 +849,17 @@ const N = {
     multiOption: true,
     intlOption: true
   },
+  hrms:{
+    label:'HRMS',sub:'Avanza · Workday · Inhouse',
+    x:10,y:498,w:220,h:42,cat:'internal',
+    vendor:"Avanza HRMS · Workday HCM · Inhouse — 3 ta variant",
+    purpose:"Xodimlar resurslarini boshqarish tizimi — ish haqi, KPI, ta'til, onboarding, mehnat shartnomasi. Bank-spesifik bonus moduli bilan to'ldirilgan. Uchta yo'nalish: banking-native vendor, global lider yoki inhouse qurilgan tizim.",
+    features:['Xodim profili va tashkiliy tuzilma','Ish haqi hisoblash — soliq va chegirmalar bilan','KPI va samaradorlik baholash moduli',"Ta'til, yo'qlik, ish vaqti hisobi",'Onboarding / Offboarding workflow','Mehnat shartnomasi va hujjat boshqaruvi','Core Banking ABS bilan API integratsiya','Front office bonus moduli — avtomatik hisoblash'],
+    connects:['Core Banking ABS','DWH & BI'],
+    status:'recommended',
+    multiOption: true,
+    hrmsOption: true
+  },
   uzcard:{
     label:'Uzcard / Humo',sub:'National switch',
     x:1020,y:188,w:158,h:42,cat:'external',
@@ -1106,7 +1117,7 @@ function buildConnectors() {
   });
 
   // ── Hub left edge → Left internals (to'g'ri diagonal chiziqlar)
-  const intIds = ['core_banking','crm','dwh','card_mgmt','cash_mgmt','billing','intl_transfer'];
+  const intIds = ['core_banking','crm','dwh','card_mgmt','cash_mgmt','billing','intl_transfer','hrms'];
   intIds.forEach((id, i) => {
     const d = N[id];
     const rx = d.x + d.w;
@@ -1686,6 +1697,155 @@ function switchWebTab(key) {
   document.querySelectorAll('.web-panel').forEach(p =>
     p.classList.toggle('active', p.dataset.key === key));
   document.getElementById('web-content-' + key).innerHTML = renderWebPanel(key);
+}
+
+/* ════════════════════════════════════════════════════════════
+   HRMS MULTI-OPTION DATA
+════════════════════════════════════════════════════════════ */
+const HRMS_OPTIONS = {
+  avanza:{
+    name:'Avanza HRMS',
+    fullName:'Avanza HR — Banking HR Management Platform',
+    badge:{text:'BANKING-NATIVE', color:'#16845E', bg:'rgba(22,132,94,.12)'},
+    when:"Avanza ekotizimida (Rendezvous, Symmetry, Unison) ishlayotgan bo'lsangiz, bank HR jarayonlarini yagona platformada boshqarishni, Core Banking bilan chuqur integratsiya kerak bo'lganda.",
+    vendor:"Avanza Solutions — Dubai / Karachi · Banking HR ixtisoslashuv · 100+ bank referensi",
+    features:[
+      "Xodim ma'lumotlari bazasi — to'liq profil boshqaruvi",
+      "Ish haqi hisoblash — avtomat, soliq va chegirmalar bilan",
+      "Mehnat daftarchasi va mehnat shartnomasi boshqaruvi",
+      "Boshqaruv hisobotlari — Mehnat Vazirligi formatida",
+      "KPI va samaradorlik baholash moduli",
+      "Ta'til va yo'qlik boshqaruvi avtomatik",
+      "Core Banking ABS bilan native integratsiya",
+      "CBU va O'zbekiston mehnat qonunchiligi muvofiqlik"
+    ],
+    pros:[
+      'Banking-specific HR workflow tayyor — tez ishga tushish',
+      'Avanza suite bilan bitta vendor — integratsiya oson',
+      '30+ bank referensi MENA mintaqasida'
+    ],
+    cons:[
+      'Litsenziya narxi nisbatan yuqori',
+      "Mahalliy O'zbekiston HR spetsifikasi sozlash talab etadi",
+      'Custom modul qo\'shish cheklangan'
+    ],
+    status:'recommended'
+  },
+  workday:{
+    name:'Workday HCM',
+    fullName:'Workday Human Capital Management — Global Leader',
+    badge:{text:'GLOBAL TOP HRMS', color:'#2E78C7', bg:'rgba(46,120,199,.12)'},
+    when:"Xalqaro standartlarga mos, eng zamonaviy cloud HRMS kerak bo'lganda. Kuchli analitika, iste'dod boshqaruvi va global payroll zarur bo'lganda.",
+    vendor:"Workday Inc. — Pleasanton, California (2005) · 10 000+ kompaniya · Fortune 500 asosiy tanlovi",
+    features:[
+      'Cloud-native SaaS — doimiy avtomatik yangilanishlar',
+      "AI-powered talent management va succession planning",
+      'Global payroll — 180+ mamlakat qonunchiligi',
+      'Workforce planning va prediktiv analitika',
+      'Mobile-first interfeys — iOS va Android',
+      'Learning Management System (LMS) built-in',
+      'REST API — barcha tashqi tizimlar bilan integratsiya',
+      'SOC 2 Type II, ISO 27001 sertifikat'
+    ],
+    pros:[
+      "Dunyo bo'yicha eng kuchli HRMS platformalaridan biri",
+      'AI va analitika — kuchli qaror qabul qilish vositalari',
+      "SaaS — IT infratuzilma xarajatisiz"
+    ],
+    cons:[
+      'Narxi yuqori — enterprise license',
+      "O'zbekiston mahalliy qonunchiligiga sozlash murakkab",
+      'Implementation 12-18 oy talab etishi mumkin'
+    ],
+    status:'evaluate'
+  },
+  inhouse:{
+    name:'Inhouse HRMS',
+    fullName:"O'z IT Jamoasi Bilan HRMS Yaratish",
+    badge:{text:'INHOUSE BUILD', color:'#9E6210', bg:'rgba(158,98,16,.12)'},
+    when:"O'zbekiston qonunchiligi va bank ichki jarayonlariga to'liq moslashgan, vendor lock-in bo'lmagan yechim kerak bo'lganda. Bank-spesifik bonus moduli kabi funksiyalar zarur bo'lganda.",
+    vendor:"Ichki IT jamoa — Node.js / Python · React / Vue.js · PostgreSQL · REST API",
+    features:[
+      'Xodim profili va tashkiliy tuzilma boshqaruvi',
+      "Ish haqi hisoblash — O'zbekiston soliq tizimi bilan",
+      "KPI va samaradorlik baholash — bank yo'nalishlari bo'yicha",
+      "Ta'til, yo'qlik, ish vaqti hisobi",
+      'Mehnat shartnomasi va hujjat boshqaruvi',
+      'Onboarding / Offboarding workflow',
+      'Core Banking ABS bilan API integratsiya',
+      '<strong style="color:#4DB893">★ Bonus moduli</strong> — front office bonusini avtomatik hisoblash, hodim kabinetiga chiqarish'
+    ],
+    pros:[
+      "To'liq nazorat — O'zbekiston qonunchiligiga 100% moslashtirilgan",
+      "Vendor lock-in yo'q — uzoq muddatda tejamkor",
+      "Bank-spesifik funksiyalar — bonus, KPI, mehnat intizomi"
+    ],
+    cons:[
+      "Yaratish vaqti — 14-20 oy to'liq funksional tizim",
+      'HR jamoa va IT jamoa chuqur hamkorligi talab etadi',
+      "Boshlang'ich banking HR qonunchilik ekspertizasi kerak"
+    ],
+    status:'evaluate',
+    demoUrl:'bonus-proto.html',
+    bonusModule: true
+  }
+};
+
+function renderHrmsPanel(optKey) {
+  const opt = HRMS_OPTIONS[optKey];
+  const st = STATUS_META[opt.status] || STATUS_META.evaluate;
+  const bonusSection = opt.bonusModule ? `
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow">
+      <div class="prow-lbl" style="color:#4DB893">★ BONUS MODULI</div>
+      <div style="background:rgba(22,132,94,.08);border:1px solid rgba(22,132,94,.3);border-radius:10px;padding:12px;margin-top:6px">
+        <div style="color:#4DB893;font-size:12px;font-weight:700;margin-bottom:6px">Front Office Bonus Kabineti</div>
+        <ul class="feat-list">
+          <li>Kunlik bonus hisoblash — kredit, omonat, o'tkazma yo'nalishlari bo'yicha</li>
+          <li>Antibonus va universallik jarima avtomatik hisob</li>
+          <li>Hodim shaxsiy kabineti — oylik natijani ko'rish</li>
+          <li>Formula bo'yicha bosqichma-bosqich izoh</li>
+          <li>Excel eksport va filial boshqaruvi</li>
+        </ul>
+      </div>
+    </div>` : '';
+  return `
+    <span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">
+      ${opt.badge.text}
+    </span>
+    <div class="when-box">
+      <div class="when-label">Qachon tanlash kerak</div>
+      <div class="when-val">${opt.when}</div>
+    </div>
+    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
+      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+    </div>
+    ${bonusSection}
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
+      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
+      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">Holat</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
+        ${opt.demoUrl ? `<button class="demo-btn" onclick="window.open('${opt.demoUrl}','_blank')"><svg viewBox="0 0 20 20"><polygon points="6,3 18,10 6,17"/></svg>DEMO</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function switchHrmsTab(key) {
+  document.querySelectorAll('.hrms-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.key === key));
+  document.querySelectorAll('.hrms-panel').forEach(p =>
+    p.classList.toggle('active', p.dataset.key === key));
+  document.getElementById('hrms-content-' + key).innerHTML = renderHrmsPanel(key);
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -3256,6 +3416,24 @@ function openPanel(id) {
        </div>
        <div class="abs-panel intl-panel active" data-key="swift"    id="intl-content-swift">${renderIntlPanel('swift')}</div>
        <div class="abs-panel intl-panel"        data-key="finastra" id="intl-content-finastra"></div>`;
+  } else if (d.hrmsOption) {
+    document.getElementById('pVendor').textContent = d.vendor;
+    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pStatus').innerHTML =
+      `<div style="margin-bottom:12px">
+        <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
+       </div>
+       <div class="prow-lbl" style="margin-bottom:8px">VARIANT TAQQOSLASH</div>
+       <div class="abs-tabs">
+         <button class="abs-tab hrms-tab active" data-key="avanza"  onclick="switchHrmsTab('avanza')">Avanza HRMS</button>
+         <button class="abs-tab hrms-tab"        data-key="workday" onclick="switchHrmsTab('workday')">Workday HCM</button>
+         <button class="abs-tab hrms-tab"        data-key="inhouse" onclick="switchHrmsTab('inhouse')">Inhouse HRMS</button>
+       </div>
+       <div class="abs-panel hrms-panel active" data-key="avanza"  id="hrms-content-avanza">${renderHrmsPanel('avanza')}</div>
+       <div class="abs-panel hrms-panel"        data-key="workday" id="hrms-content-workday"></div>
+       <div class="abs-panel hrms-panel"        data-key="inhouse" id="hrms-content-inhouse"></div>`;
   } else if (d.amlOption) {
     document.getElementById('pVendor').textContent = d.vendor;
     document.getElementById('pPurpose').textContent = d.purpose;
