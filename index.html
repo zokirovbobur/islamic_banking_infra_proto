@@ -31,12 +31,12 @@
     <rect x="530" y="640" width="140" height="50" rx="6" fill="#180606" stroke="#8B2020" stroke-width="3"></rect>
     <rect x="720" y="640" width="140" height="50" rx="6" fill="#180606" stroke="#8B2020" stroke-width="3"></rect>
     <!-- Connecting lines -->
-    <line x1="340" y1="280" x2="440" y2="380" stroke="#3DE89A" stroke-width="2" opacity="0.6"></line>
-    <line x1="340" y1="400" x2="440" y2="410" stroke="#3DE89A" stroke-width="2" opacity="0.6"></line>
-    <line x1="760" y1="380" x2="860" y2="280" stroke="#EAA83A" stroke-width="2" opacity="0.6"></line>
-    <line x1="760" y1="410" x2="860" y2="400" stroke="#EAA83A" stroke-width="2" opacity="0.6"></line>
-    <line x1="600" y1="170" x2="600" y2="320" stroke="#6BA8E0" stroke-width="2" opacity="0.6"></line>
-    <line x1="600" y1="500" x2="600" y2="640" stroke="#D06060" stroke-width="2" opacity="0.6"></line>
+    <line x1="340" y1="280" x2="440" y2="380" stroke="#16845E" stroke-width="2" opacity="0.6"></line>
+    <line x1="340" y1="400" x2="440" y2="410" stroke="#16845E" stroke-width="2" opacity="0.6"></line>
+    <line x1="760" y1="380" x2="860" y2="280" stroke="#9E6210" stroke-width="2" opacity="0.6"></line>
+    <line x1="760" y1="410" x2="860" y2="400" stroke="#9E6210" stroke-width="2" opacity="0.6"></line>
+    <line x1="600" y1="170" x2="600" y2="320" stroke="#2E78C7" stroke-width="2" opacity="0.6"></line>
+    <line x1="600" y1="500" x2="600" y2="640" stroke="#8B2020" stroke-width="2" opacity="0.6"></line>
   </svg>
 </template>
 <style>
@@ -217,7 +217,7 @@ body::before{
 
 /* ── CANVAS WRAP ────────────────────────────────── */
 .canvas-wrap{
-  position:fixed;top:54px;left:0;right:0;bottom:0;
+  position:fixed;top:54px;left:0;right:0;bottom:32px;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;
   z-index:1;
@@ -231,6 +231,7 @@ body::before{
   position:absolute;top:0;left:0;
   width:1300px;height:630px;
   pointer-events:none;z-index:1;
+  overflow:visible;filter:url(#line-glow);
 }
 
 /* ── NODES ──────────────────────────────────────── */
@@ -244,8 +245,39 @@ body::before{
 }
 .node:hover{transform:translateY(-1px);filter:brightness(1.25)}
 .node:active{transform:translateY(0)}
-.node.selected{box-shadow:0 0 0 2px currentColor}
 .node.dimmed{opacity:.12;pointer-events:none}
+
+/* GLOW PER CATEGORY */
+.node[data-cat="hub"]        {box-shadow:0 0 20px rgba(108,99,212,.28)}
+.node[data-cat="channel"]    {box-shadow:0 0 14px rgba(46,120,199,.26)}
+.node[data-cat="internal"]   {box-shadow:0 0 14px rgba(22,132,94,.26)}
+.node[data-cat="external"]   {box-shadow:0 0 14px rgba(158,98,16,.26)}
+.node[data-cat="compliance"] {box-shadow:0 0 14px rgba(139,32,32,.26)}
+.node[data-cat="gateway"]    {box-shadow:0 0 12px rgba(46,120,199,.20)}
+.node.selected{box-shadow:0 0 0 2px currentColor}
+
+/* FOOTER */
+.site-footer{
+  position:fixed;bottom:0;left:0;right:0;height:32px;
+  background:rgba(8,8,16,.92);
+  border-top:1px solid var(--line-bright);
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  z-index:100;backdrop-filter:blur(12px);
+}
+.footer-by{font-family:var(--font-mono);font-size:9.5px;color:var(--text3);letter-spacing:.04em}
+.footer-sep{color:var(--text3);font-size:10px}
+.footer-link{
+  font-family:var(--font-mono);font-size:9.5px;font-weight:500;
+  letter-spacing:.04em;text-decoration:none;
+  padding:2px 8px;border-radius:3px;border:1px solid;
+  transition:all .15s;
+}
+.footer-tg{color:#5BB8F5;border-color:rgba(91,184,245,.35);background:rgba(91,184,245,.06)}
+.footer-tg:hover{background:rgba(91,184,245,.15);border-color:rgba(91,184,245,.7)}
+.footer-li{color:#6BA8E0;border-color:rgba(46,120,199,.35);background:rgba(46,120,199,.06)}
+.footer-li:hover{background:rgba(46,120,199,.15);border-color:rgba(46,120,199,.7)}
+.footer-gh{color:var(--text2);border-color:var(--line-bright);background:rgba(255,255,255,.04)}
+.footer-gh:hover{color:var(--text);border-color:var(--text3)}
 
 .n-label{
   font-family:var(--font-display);
@@ -534,20 +566,30 @@ body::before{
   <div id="canvas" style="transform: scale(0.922992);">
     <svg id="svg-lines" xmlns="http://www.w3.org/2000/svg"><defs>
   <marker id="arr-green" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#3DE89A" stroke-width="1.5" stroke-linejoin="round"></path>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#16845E" stroke-width="1.5" stroke-linejoin="round"></path>
   </marker>
   <marker id="arr-amber" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#EAA83A" stroke-width="1.5" stroke-linejoin="round"></path>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#9E6210" stroke-width="1.5" stroke-linejoin="round"></path>
   </marker>
   <marker id="arr-purple" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#8880E8" stroke-width="1.5" stroke-linejoin="round"></path>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#6C63D4" stroke-width="1.5" stroke-linejoin="round"></path>
   </marker>
   <marker id="arr-blue" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#6BA8E0" stroke-width="1.5" stroke-linejoin="round"></path>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#2E78C7" stroke-width="1.5" stroke-linejoin="round"></path>
   </marker>
   <marker id="arr-red" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#D06060" stroke-width="1.5" stroke-linejoin="round"></path>
-  </marker></defs><path d="M341,58 L341,98 L523,228" stroke="#6BA8E0" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M483,58 L483,98 L577,228" stroke="#6BA8E0" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M625,58 L625,98 L630,228" stroke="#6BA8E0" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M767,58 L767,98 L683,228" stroke="#6BA8E0" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M909,58 L909,98 L737,228" stroke="#6BA8E0" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M230,169 L470,256" stroke="#3DE89A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,219 L470,283" stroke="#3DE89A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,269 L470,311" stroke="#3DE89A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,319 L470,338" stroke="#3DE89A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,369 L470,366" stroke="#3DE89A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,419 L470,393" stroke="#3DE89A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,469 L470,421" stroke="#3DE89A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M790,259 L1020,209" stroke="#EAA83A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,291 L1020,259" stroke="#EAA83A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,322 L1020,309" stroke="#EAA83A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,354 L1020,359" stroke="#EAA83A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,385 L1020,409" stroke="#EAA83A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,417 L1020,459" stroke="#EAA83A" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M534,448 L341,564" stroke="#D06060" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path><path d="M598,448 L523,564" stroke="#D06060" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path><path d="M662,448 L705,564" stroke="#D06060" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path><path d="M726,448 L887,564" stroke="#D06060" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path></svg>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#8B2020" stroke-width="1.5" stroke-linejoin="round"></path>
+  </marker>
+  <filter id="line-glow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+    <feComponentTransfer in="blur" result="dimblur">
+      <feFuncA type="linear" slope="0.35"/>
+    </feComponentTransfer>
+    <feMerge>
+      <feMergeNode in="dimblur"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter></defs><path d="M341,58 L341,98 L523,228" stroke="#2E78C7" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M483,58 L483,98 L577,228" stroke="#2E78C7" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M625,58 L625,98 L630,228" stroke="#2E78C7" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M767,58 L767,98 L683,228" stroke="#2E78C7" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M909,58 L909,98 L737,228" stroke="#2E78C7" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-blue)"></path><path d="M230,169 L470,256" stroke="#16845E" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,219 L470,283" stroke="#16845E" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,269 L470,311" stroke="#16845E" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,319 L470,338" stroke="#16845E" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,369 L470,366" stroke="#16845E" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,419 L470,393" stroke="#16845E" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M230,469 L470,421" stroke="#16845E" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-green)"></path><path d="M790,259 L1020,209" stroke="#9E6210" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,291 L1020,259" stroke="#9E6210" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,322 L1020,309" stroke="#9E6210" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,354 L1020,359" stroke="#9E6210" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,385 L1020,409" stroke="#9E6210" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M790,417 L1020,459" stroke="#9E6210" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-amber)"></path><path d="M534,448 L341,564" stroke="#8B2020" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path><path d="M598,448 L523,564" stroke="#8B2020" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path><path d="M662,448 L705,564" stroke="#8B2020" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path><path d="M726,448 L887,564" stroke="#8B2020" stroke-width="2" fill="none" stroke-opacity="1" marker-end="url(#arr-red)"></path></svg>
     <div class="pci-scope" id="pciScope" style="left: 456px; top: 216px; width: 348px; height: 244px;"></div>
     <div class="pci-tag" id="pciTag" style="left: 786px; top: 210px;">PCI DSS SCOPE</div>
   <div class="node node-hub" id="node-middleware" data-id="middleware" data-cat="hub" style="left: 470px; top: 228px; width: 320px; height: 220px; background: rgb(22, 14, 53); border-color: rgb(108, 99, 212); --sel-col: #6C63D4;">
@@ -995,19 +1037,19 @@ const svg = document.getElementById('svg-lines');
 const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
 defs.innerHTML = `
   <marker id="arr-green" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#3DE89A" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#16845E" stroke-width="1.5" stroke-linejoin="round"/>
   </marker>
   <marker id="arr-amber" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#EAA83A" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#9E6210" stroke-width="1.5" stroke-linejoin="round"/>
   </marker>
   <marker id="arr-purple" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#8880E8" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#6C63D4" stroke-width="1.5" stroke-linejoin="round"/>
   </marker>
   <marker id="arr-blue" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#6BA8E0" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#2E78C7" stroke-width="1.5" stroke-linejoin="round"/>
   </marker>
   <marker id="arr-red" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#D06060" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M1,1 L7,4 L1,7" fill="none" stroke="#8B2020" stroke-width="1.5" stroke-linejoin="round"/>
   </marker>`;
 svg.appendChild(defs);
 
@@ -1047,10 +1089,10 @@ function buildConnectors() {
   const mTy = mw.y;             // 228  top
   const mBy = mw.y + mw.h;     // 448  bottom
 
-  const blueCol   = '#6BA8E0';  // top lines / public channels
-  const greenCol  = '#3DE89A';  // internal (left) nodes — bright green
-  const amberCol  = '#EAA83A';  // external (right) nodes — bright amber
-  const redCol    = '#D06060';  // bottom compliance lines
+  const blueCol   = '#2E78C7';  // top lines / public channels
+  const greenCol  = '#16845E';  // internal (left) nodes
+  const amberCol  = '#9E6210';  // external (right) nodes
+  const redCol    = '#8B2020';  // bottom compliance lines
 
   // ── Channels → GW → Hub top (5 alohida chiziqlar: kanal → gateway → middleware)
   const gw = N.gateway;
@@ -3393,5 +3435,14 @@ scaleCanvas();
 window.addEventListener('resize', scaleCanvas);
 </script>
 
+<footer class="site-footer">
+  <span class="footer-by">Zokirov Bobur tomonidan</span>
+  <span class="footer-sep">·</span>
+  <a href="https://t.me/zokirovbobur" target="_blank" class="footer-link footer-tg">Telegram</a>
+  <span class="footer-sep">·</span>
+  <a href="https://www.linkedin.com/in/zokirovbobur/" target="_blank" class="footer-link footer-li">LinkedIn</a>
+  <span class="footer-sep">·</span>
+  <a href="https://github.com/zokirovbobur/islamic_banking_infra_proto" target="_blank" class="footer-link footer-gh">GitHub</a>
+</footer>
 
 </body></html>
