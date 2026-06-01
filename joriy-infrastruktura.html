@@ -327,6 +327,33 @@ body::before{
   font-family:var(--font-mono); font-size:10.5px;
   color:var(--red-l); line-height:1.5;
 }
+/* NGINX BAR */
+#node-nginx{
+  left:232px;top:76px;width:326px;height:20px;
+  background:rgba(46,120,199,.05);
+  border-color:rgba(46,120,199,.38);
+  border-style:dashed;
+  flex-direction:row;justify-content:center;align-items:center;
+  padding:0;
+}
+#node-nginx::after{
+  content:'NGINX \B7  Reverse Proxy';
+  font-family:var(--font-mono);font-size:9px;
+  color:var(--blue-l);letter-spacing:.05em;
+}
+/* ESB NODE */
+#node-esb{
+  left:232px;top:106px;width:326px;height:54px;
+  background:rgba(158,98,16,.07);
+  border-color:rgba(158,98,16,.55);
+}
+.esb-limited-tag{
+  position:absolute;top:-10px;left:10px;
+  font-family:var(--font-mono);font-size:7.5px;
+  background:var(--bg);color:var(--amber-l);
+  border:1px solid var(--amber);padding:1px 6px;
+  border-radius:3px;letter-spacing:.07em;
+}
 </style>
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -350,13 +377,23 @@ body::before{
   <div id="canvas">
     <svg id="svg-lines" xmlns="http://www.w3.org/2000/svg"></svg>
 
+    <!-- NGINX BAR -->
+    <div class="node" id="node-nginx" data-id="nginx" data-cat="proxy"></div>
+
+    <!-- ESB -->
+    <div class="node" id="node-esb" data-id="esb" data-cat="esb">
+      <div class="esb-limited-tag">⚠ CHEKLANGAN</div>
+      <div class="n-label" style="color:#D4944A">ESB</div>
+      <div class="n-sub" style="color:#D4944A;font-size:8.5px">ABS API collection only · Middleware yo'q</div>
+    </div>
+
     <!-- ABS HUB -->
     <div class="abs-hub" id="absHub">
-      <div class="legacy-tag">⚠ POINT-TO-POINT · MIDDLEWARE YO'Q</div>
       <div class="abs-header">
         <div class="abs-title-block">
           <div class="abs-title">Core Banking <em>ABS</em></div>
           <div class="abs-sub">Markaziy va yagona tizim — barcha modullar shu yerda</div>
+          <div class="legacy-tag" style="position:static;display:inline-block;margin-top:5px">⚠ ESB CHEKLANGAN · MIDDLEWARE YO'Q</div>
         </div>
         <div class="abs-tabs-row">
           <button class="abs-vendor-tab active" data-vendor="iABS" onclick="switchVendor('iABS')">iABS</button>
@@ -406,17 +443,27 @@ const ABS_INFO = {
 
 const NODES = {
   /* CHANNELS — top */
-  mobile:{label:'Mobile App',sub:'iOS · Android',x:280,y:80,w:140,h:52,cat:'channel',
-    purpose:"Mijozlarning mobil banking ilovasi. Joriy holatda Middleware yo'q — to'g'ridan-to'g'ri ABS bilan va ba'zi tashqi tizimlar (Uzcard/Humo) bilan alohida API orqali bog'lanadi.",
-    features:['ABS bilan to\'g\'ridan-to\'g\'ri REST/SOAP','Uzcard/Humo SDK alohida integratsiya','Push notifikatsiyalar','Har bir tashqi xizmat uchun alohida adapter']
+  mobile:{label:'Mobile App',sub:'iOS · Android',x:240,y:20,w:140,h:48,cat:'channel',
+    purpose:"Mijozlarning mobil banking ilovasi. NGINX reverse proxy → ESB orqali ABS bilan bog'lanadi. ESB ichida faqat ABS API collection mavjud — to'liq Middleware imkoniyatlari yo'q. Ba'zi tashqi tizimlar (Uzcard/Humo) bilan alohida SDK orqali to'g'ridan-to'g'ri ulanadi.",
+    features:["NGINX → ESB → ABS yo'li","ESB faqat ABS API wrapper",'Uzcard/Humo SDK alohida integratsiya','Push notifikatsiyalar',"SAF/STIP, BPM yo'q"]
   },
-  web:{label:'Web Portal',sub:'Internet banking',x:460,y:80,w:140,h:52,cat:'channel',
-    purpose:"Internet banking portali. ABS va tashqi tizimlar (SWIFT, Didox) bilan to'g'ridan-to'g'ri integratsiya.",
-    features:['ABS bilan direct API','SWIFT/Didox alohida bog\'lanish','MT940 statement eksport','Server-side SOAP wrappers']
+  web:{label:'Web Portal',sub:'Internet banking',x:410,y:20,w:140,h:48,cat:'channel',
+    purpose:"Internet banking portali. NGINX reverse proxy → ESB orqali ABS bilan ulanadi. ESB faqat ABS API collection — SWIFT, Didox uchun alohida adapter kerak.",
+    features:["NGINX → ESB → ABS yo'li","ESB faqat ABS API wrapper","SWIFT/Didox alohida bog'lanish",'MT940 statement eksport','Server-side SOAP wrappers']
   },
-  atm_ch:{label:'ATM/POS ch.',sub:'ISO 8583',x:640,y:80,w:140,h:52,cat:'channel',
+  atm_ch:{label:'ATM/POS ch.',sub:'ISO 8583',x:620,y:20,w:140,h:48,cat:'channel',
     purpose:"ATM va POS terminallari ISO 8583 protokoli bilan to'g'ridan-to'g'ri ABS va Uzcard/Humo switchi bilan ulanadi. Middleware yo'q — ABS off-line bo'lsa to'lov to'xtaydi.",
-    features:['ISO 8583 native','Uzcard/Humo bilan direct switching','ABS off-line → tranzaksiya rad etiladi','SAF/STIP rejimi yo\'q']
+    features:['ISO 8583 native','Uzcard/Humo bilan direct switching',"ABS off-line → tranzaksiya rad etiladi","SAF/STIP rejimi yo'q"]
+  },
+
+  /* NGINX / ESB — oraliq qatlam */
+  nginx:{label:'NGINX · Reverse Proxy',sub:'',x:232,y:76,w:326,h:20,cat:'proxy',
+    purpose:"Oddiy reverse proxy — Mobile App va Web Portal so'rovlarini qabul qilib ESB ga yo'naltiradi. SSL termination va basic routing mavjud. WAF, OAuth2, rate limiting, DDoS himoya va monitoring imkoniyatlari yo'q.",
+    features:["Reverse proxy — request forwarding","SSL/TLS termination","Basic load balancing","WAF, OAuth2, Rate limiting YO'Q","Monitoring / tracing YO'Q"]
+  },
+  esb:{label:'ESB',sub:'ABS API collection only',x:232,y:106,w:326,h:54,cat:'esb',
+    purpose:"Enterprise Service Bus — ichida faqat ABS modullariga mo'ljallangan API collection joylashgan. To'liq Middleware imkoniyatlari (Kafka message queue, BPM/Saga pattern, SAF/STIP offline rejim, DR/Failover, APM monitoring) mavjud emas.",
+    features:["ABS REST/SOAP API collection","Basic request routing","Kafka / Message Queue YO'Q","BPM / Saga pattern YO'Q","SAF/STIP (offline rejim) YO'Q","DR/Failover YO'Q","APM monitoring YO'Q"]
   },
 
   /* INTERNAL — inside ABS */
@@ -502,6 +549,8 @@ const NODES = {
 
 const COLORS = {
   channel:    {bg:'#09162A',br:'#2E78C7',text:'#6BA8E0',meta:'Mijoz kanali',brCol:'rgba(46,120,199,.4)',bgCol:'rgba(46,120,199,.08)'},
+  proxy:      {bg:'rgba(46,120,199,.04)',br:'rgba(46,120,199,.38)',text:'#6BA8E0',meta:'Reverse Proxy',brCol:'rgba(46,120,199,.5)',bgCol:'rgba(46,120,199,.06)'},
+  esb:        {bg:'rgba(158,98,16,.07)',br:'rgba(158,98,16,.55)',text:'#D4944A',meta:'ESB (cheklangan)',brCol:'rgba(158,98,16,.5)',bgCol:'rgba(158,98,16,.09)'},
   internal:   {bg:'#071F14',br:'#16845E',text:'#4DB893',meta:'ABS ichki modul',brCol:'rgba(22,132,94,.4)',bgCol:'rgba(22,132,94,.08)'},
   external:   {bg:'#1A1200',br:'#9E6210',text:'#D4944A',meta:'Tashqi tizim',brCol:'rgba(158,98,16,.4)',bgCol:'rgba(158,98,16,.08)'},
   compliance: {bg:'#180606',br:'#8B2020',text:'#D06060',meta:'ABS compliance modul',brCol:'rgba(139,32,32,.4)',bgCol:'rgba(139,32,32,.08)'}
@@ -515,7 +564,8 @@ const svg = document.getElementById('svg-lines');
 
 function buildNodes(){
   Object.entries(NODES).forEach(([id,d])=>{
-    if(d.cat==='internal'||d.cat==='compliance') return; // those live inside ABS
+    if(d.cat==='internal'||d.cat==='compliance') return;
+    if(id==='nginx'||id==='esb') return; // static HTML elements
     const c = COLORS[d.cat];
     const el = document.createElement('div');
     el.className = 'node';
@@ -527,6 +577,8 @@ function buildNodes(){
     el.addEventListener('click',()=>openPanel(id));
     canvas.appendChild(el);
   });
+  document.getElementById('node-nginx').addEventListener('click',()=>openPanel('nginx'));
+  document.getElementById('node-esb').addEventListener('click',()=>openPanel('esb'));
   // ABS internal modules
   const intGrid = document.getElementById('intGrid');
   ['crm','card_mgmt','cash_mgmt','billing','intl_transfer'].forEach(id=>{
@@ -585,33 +637,50 @@ function addLine(d, col, w=1.5, marker='', dash=false){
 }
 
 function buildConnectors(){
-  const absTop    = 170;
-  const absRight  = 880;
-  const blue      = '#2E78C7';
-  const green     = '#16845E';
+  const absTop   = 170;
+  const absRight = 880;
+  const blue     = '#2E78C7';
+  const green    = '#16845E';
+  const amber    = '#9E6210';
 
-  // Channel centers
-  const mobileCx  = 350;
-  const webCx     = 530;
-  const atmCx     = 710;
-  const chanBottom = 132;
+  // Channel bottoms: y:20 + h:48 = 68
+  const mobileCx   = 310; // x:240 + 70
+  const webCx      = 480; // x:410 + 70
+  const atmCx      = 690; // x:620 + 70
+  const chanBottom = 68;
 
-  // External nodes: y positions are [164,236,308,380,452,524], h=54
-  // Blue lines enter at top of each node (y+14), amber at center (y+27)
+  // nginx: top:76, bottom:96, center-x:395
+  const nginxTop    = 76;
+  const nginxBottom = 96;
+  const nginxCx     = 395;
+
+  // ESB: top:106, bottom:160
+  const esbTop    = 106;
+  const esbBottom = 160;
+
+  // External y near-top (y+14) and mid (y+27)
   const yBlue  = [178, 250, 322, 394, 466, 538];
   const yAmber = [191, 263, 335, 407, 479, 551];
 
-  // === 1) Channel → ABS: 3 vertical blue lines ===
-  [mobileCx, webCx, atmCx].forEach(x => {
-    addLine(`M${x},${chanBottom} L${x},${absTop}`, blue, 2.4, 'arr-blue');
-  });
+  // === 1) Mobile / Web → nginx top ===
+  addLine(`M${mobileCx},${chanBottom} L${mobileCx},${nginxTop}`, blue, 2);
+  addLine(`M${webCx},${chanBottom} L${webCx},${nginxTop}`, blue, 2);
 
-  // === 2) Mobile → External: solid blue spine ===
+  // === 2) nginx bottom → ESB top ===
+  addLine(`M${nginxCx},${nginxBottom} L${nginxCx},${esbTop}`, blue, 2, 'arr-blue');
+
+  // === 3) ESB → ABS (amber dashed — cheklangan) ===
+  addLine(`M${nginxCx},${esbBottom} L${nginxCx},${absTop}`, amber, 2, 'arr-amber', true);
+
+  // === 4) ATM → ABS (to'g'ridan-to'g'ri, nginx/ESB yo'q) ===
+  addLine(`M${atmCx},${chanBottom} L${atmCx},${absTop}`, blue, 2.4, 'arr-blue');
+
+  // === 5) Mobile → External spine (Uzcard SDK va boshqa to'g'ridan-to'g'ri) ===
   const mSpineX = 888;
   addLine(`M${mobileCx},${chanBottom} L${mSpineX},${chanBottom} L${mSpineX},${yBlue[5]}`, blue, 1.6);
   yBlue.forEach(ty => addLine(`M${mSpineX},${ty} L980,${ty}`, blue, 1.9, 'arr-blue'));
 
-  // === 3) ABS → External: amber horizontal lines ===
+  // === 6) ABS → External ===
   yAmber.forEach(ty => {
     addLine(`M${absRight},${ty} L980,${ty}`, green, 2.4, 'arr-green');
   });
@@ -658,10 +727,14 @@ function openPanel(id){
   let html = '';
   if (d.inside){
     html += `<div class="warn-callout">📦 Joylashuvi: <b>${d.inside}</b> — alohida microservice emas, ABS yadrosining bir qismi.</div>`;
+  } else if (d.cat==='esb'){
+    html += `<div class="warn-callout">⚠ ESB ichida faqat <b>ABS API collection</b> mavjud — Kafka, BPM, SAF/STIP, DR/Failover kabi to'liq Middleware imkoniyatlari yo'q.</div>`;
+  } else if (d.cat==='proxy'){
+    html += `<div class="warn-callout" style="background:rgba(46,120,199,.08);border-color:rgba(46,120,199,.3);color:#6BA8E0">ℹ Oddiy NGINX reverse proxy — WAF, OAuth2, rate limiting va monitoring imkoniyatlari yo'q.</div>`;
   } else if (d.cat==='external'){
     html += `<div class="warn-callout">⚠ Joriy holatda bu tashqi tizimga <b>kanal va ABS</b> alohida (point-to-point) ulanadi — Middleware orqali umumlashtirilmagan.</div>`;
   } else if (d.cat==='channel'){
-    html += `<div class="warn-callout">⚠ Bu kanal ABS va kerakli tashqi tizimlarga <b>to'g'ridan-to'g'ri</b> ulanadi — Middleware orqali umumlashtirilmagan.</div>`;
+    html += `<div class="warn-callout">⚠ Bu kanal ABS ga <b>NGINX → ESB</b> orqali ulanadi. ESB faqat ABS API collection — to'liq Middleware imkoniyatlari yo'q.</div>`;
   }
   html += `<div class="prow"><div class="prow-lbl">Vazifa</div><div class="prow-val">${d.purpose}</div></div>`;
   html += `<div class="divider"></div>`;
@@ -680,8 +753,8 @@ function setFilter(btn, f){
   const all = document.querySelectorAll('.node');
   all.forEach(n=>{
     const cat = n.dataset.cat;
-    let show = f==='all' || cat===f || (f==='abs' && false);
-    if (f==='abs') show = false;
+    let show = f==='all' || cat===f;
+    if (f==='channel') show = show || cat==='proxy' || cat==='esb';
     n.classList.toggle('dimmed', !show);
   });
   // ABS hub dim
