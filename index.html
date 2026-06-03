@@ -1718,12 +1718,105 @@ const CRM_OPTIONS = {
       'Katta korporativ segment uchun moslashtiruv kerak'
     ],
     status:'evaluate'
+  },
+  inhouse:{
+    name:'Inhouse CRM',
+    fullName:"Inhouse — Bank ichida ishlab chiqilgan CRM + Kredit Konveyeri",
+    badge:{text:'INHOUSE BUILD', color:'#7C3AED', bg:'rgba(124,58,237,.12)'},
+    when:{
+      uz:"Bank o'z jarayonlarini to'liq nazorat qilishni xohlasa, vendor lock-in'dan qochish kerak bo'lsa va uzoq muddatda TCO minimallashtirilishi muhim bo'lganda.",
+      ru:"Когда банк хочет полного контроля над процессами, избежать vendor lock-in и минимизировать TCO в долгосрочной перспективе.",
+      en:"When the bank wants full process control, needs to avoid vendor lock-in, and long-term TCO minimisation is a priority."
+    },
+    vendor:"Internal IT jamoa · Trastbank Engineering · Stack: React + Node.js / Java Spring + PostgreSQL",
+    features:{
+      uz:[
+        "Kredit konveyeri: ariza → skoring → Sharia tekshiruv → tasdiqlash → disbursement",
+        "360° mijoz profili — barcha kanallar va mahsulotlar bitta ekranda",
+        "KYC workflow: hujjat yuklash, verifikatsiya, AML screening",
+        "Lead management — funnel va konversiya hisobotlari",
+        "Front/Back Office — operator va menejer rollari",
+        "CBU va AAOIFI reporting shakllari — ichki format",
+        "Core Banking va Middleware bilan native API integratsiya",
+        "Full audit trail — har bir harakat timestampli qayd etiladi"
+      ],
+      ru:[
+        "Кредитный конвейер: заявка → скоринг → Sharia-проверка → одобрение → выдача",
+        "360° профиль клиента — все каналы и продукты на одном экране",
+        "KYC workflow: загрузка документов, верификация, AML-скрининг",
+        "Lead management — воронка и отчёты по конверсии",
+        "Front/Back Office — роли оператора и менеджера",
+        "Формы отчётности CBU и AAOIFI — внутренний формат",
+        "Нативная API-интеграция с Core Banking и Middleware",
+        "Полный audit trail — каждое действие фиксируется с timestamp"
+      ],
+      en:[
+        "Loan pipeline: application → scoring → Sharia check → approval → disbursement",
+        "360° client profile — all channels and products on one screen",
+        "KYC workflow: document upload, verification, AML screening",
+        "Lead management — funnel and conversion reports",
+        "Front/Back Office — operator and manager roles",
+        "CBU and AAOIFI reporting forms — internal format",
+        "Native API integration with Core Banking and Middleware",
+        "Full audit trail — every action recorded with timestamp"
+      ]
+    },
+    pros:{
+      uz:[
+        "Vendor lock-in yo'q — to'liq kod va ma'lumotlar nazorati bankda",
+        "Banking jarayonlariga 100% moslashtiruv — hech qanday kompromiss yo'q",
+        "Uzoq muddatda eng past TCO — litsenziya to'lovi yo'q"
+      ],
+      ru:[
+        "Нет vendor lock-in — полный контроль кода и данных остаётся в банке",
+        "100% кастомизация под банковские процессы — никаких компромиссов",
+        "Наименьший TCO в долгосрочной перспективе — нет лицензионных платежей"
+      ],
+      en:[
+        "No vendor lock-in — full code and data ownership stays with the bank",
+        "100% customisation for banking processes — zero compromise",
+        "Lowest long-term TCO — no licence fees"
+      ]
+    },
+    cons:{
+      uz:[
+        "Yuqori boshlang'ich investitsiya — jamoa yollash va ishlab chiqish vaqti",
+        "Kech bozorga chiqish — 12-18 oy MVP",
+        "Doimiy texnik support va yangilanish xarajati"
+      ],
+      ru:[
+        "Высокие начальные инвестиции — найм команды и время разработки",
+        "Позднее время выхода на рынок — MVP 12-18 месяцев",
+        "Постоянные затраты на техподдержку и обновления"
+      ],
+      en:[
+        "High upfront investment — team hiring and development time",
+        "Late time-to-market — MVP 12-18 months",
+        "Ongoing maintenance and update costs"
+      ]
+    },
+    status:'evaluate',
+    hasDemo: true
   }
 };
 
 function renderCrmPanel(optKey) {
   const opt = CRM_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
+  const features = t(opt.features);
+  const pros = t(opt.pros);
+  const cons = t(opt.cons);
+  const demoBtn = opt.hasDemo ? `
+    <div style="margin-top:16px">
+      <a href="kredit-konveyer.html" target="_blank" rel="noopener" style="
+        display:inline-flex;align-items:center;gap:8px;
+        padding:10px 20px;border-radius:8px;text-decoration:none;
+        background:linear-gradient(135deg,#7C3AED,#5B21B6);
+        color:#fff;font-size:13px;font-weight:600;letter-spacing:.4px;
+        box-shadow:0 4px 14px rgba(124,58,237,.4);transition:opacity .2s">
+        ▶ DEMO — Kredit Konveyeri
+      </a>
+    </div>` : '';
   return `
     <span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">
       ${opt.badge.text}
@@ -1735,19 +1828,20 @@ function renderCrmPanel(optKey) {
     <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
     <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
-      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
+      <ul class="feat-list">${features.map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
     <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
-      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+      <ul class="feat-list">${pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
     </div>
     <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
-      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+      <ul class="feat-list">${cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
     <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
     </div>
+    ${demoBtn}
   `;
 }
 
@@ -3541,10 +3635,12 @@ function openPanel(id) {
          <button class="abs-tab crm-tab active" data-key="unison" onclick="switchCrmTab('unison')">Unison Ace</button>
          <button class="abs-tab crm-tab"        data-key="bitrix" onclick="switchCrmTab('bitrix')">Bitrix24</button>
          <button class="abs-tab crm-tab"        data-key="fido"   onclick="switchCrmTab('fido')">Fido CRM</button>
+         <button class="abs-tab crm-tab"        data-key="inhouse" onclick="switchCrmTab('inhouse')" style="color:#A78BFA">Inhouse</button>
        </div>
-       <div class="abs-panel crm-panel active" data-key="unison" id="crm-content-unison">${renderCrmPanel('unison')}</div>
-       <div class="abs-panel crm-panel"        data-key="bitrix" id="crm-content-bitrix"></div>
-       <div class="abs-panel crm-panel"        data-key="fido"   id="crm-content-fido"></div>`;
+       <div class="abs-panel crm-panel active" data-key="unison"  id="crm-content-unison">${renderCrmPanel('unison')}</div>
+       <div class="abs-panel crm-panel"        data-key="bitrix"  id="crm-content-bitrix"></div>
+       <div class="abs-panel crm-panel"        data-key="fido"    id="crm-content-fido"></div>
+       <div class="abs-panel crm-panel"        data-key="inhouse" id="crm-content-inhouse"></div>`;
   } else if (d.mobileOption) {
     // Mobile App multi-option rendering
     document.getElementById('pVendor').textContent = d.vendor;
