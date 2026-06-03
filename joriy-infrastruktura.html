@@ -341,6 +341,11 @@ body::before{
   font-family:var(--font-mono);font-size:9px;
   color:var(--blue-l);letter-spacing:.05em;
 }
+/* LANG SWITCHER */
+.lang-sw{display:flex;gap:3px;margin-left:10px}
+.lang-sw button{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.06em;padding:4px 9px;border-radius:3px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.4);cursor:pointer;transition:all .15s}
+.lang-sw button:hover{color:#fff;background:rgba(255,255,255,.1)}
+.lang-sw button.active{color:#fff;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4)}
 /* ESB NODE */
 #node-esb{
   left:232px;top:106px;width:326px;height:54px;
@@ -366,10 +371,15 @@ body::before{
   <div class="logo"><span>AS-IS</span> · IT INFRA<a class="logo-badge-btn" href="index.html">TO-BE ARCHITECTURE →</a></div>
   <div class="topbar-center"></div>
   <div class="filters">
-    <button class="filter-btn active" data-f="all" onclick="setFilter(this,'all')">Hammasi</button>
-    <button class="filter-btn" data-f="channel" onclick="setFilter(this,'channel')">Kanallar</button>
-    <button class="filter-btn" data-f="abs" onclick="setFilter(this,'abs')">ABS</button>
-    <button class="filter-btn" data-f="external" onclick="setFilter(this,'external')">Tashqi</button>
+    <button class="filter-btn active" data-f="all" onclick="setFilter(this,'all')" id="fb-all">Hammasi</button>
+    <button class="filter-btn" data-f="channel" onclick="setFilter(this,'channel')" id="fb-channel">Kanallar</button>
+    <button class="filter-btn" data-f="abs" onclick="setFilter(this,'abs')" id="fb-abs">ABS</button>
+    <button class="filter-btn" data-f="external" onclick="setFilter(this,'external')" id="fb-external">Tashqi</button>
+  </div>
+  <div class="lang-sw">
+    <button onclick="setLang('uz')" data-lang="uz">UZ</button>
+    <button onclick="setLang('ru')" data-lang="ru">RU</button>
+    <button onclick="setLang('en')" data-lang="en">EN</button>
   </div>
 </div>
 
@@ -422,6 +432,45 @@ body::before{
 
 <script>
 /* ════════════════════════════════════════════════════
+   I18N
+════════════════════════════════════════════════════ */
+const L = localStorage.getItem('ib_lang') || 'uz';
+function t(v){return typeof v==='object'?(v[L]||v.uz||v):v;}
+function setLang(l){localStorage.setItem('ib_lang',l);location.reload();}
+const T={
+  uz:{
+    filterAll:'Hammasi',filterChannel:'Kanallar',filterAbs:'ABS',filterExternal:'Tashqi',
+    btnTobe:'TO-BE ARCHITECTURE →',
+    panelVendor:'Vendor',panelPurpose:'Maqsad',panelFeatures:'Asosiy xususiyatlar',
+    panelConnects:'Ulangan',panelStatus:'Holat',
+    catChannel:'Mijoz kanali',catAbs:'ABS moduli',catExternal:'Tashqi tizim',
+    statusLegacy:'Legacy',statusActive:'Faol',statusRisk:'Riskli',
+    footerBy:'Zokirov Bobur tomonidan',
+    pageTitle:'Joriy IT Infrastruktura — Islamic Banking',
+  },
+  ru:{
+    filterAll:'Все',filterChannel:'Каналы',filterAbs:'ABS',filterExternal:'Внешние',
+    btnTobe:'TO-BE ARCHITECTURE →',
+    panelVendor:'Вендор',panelPurpose:'Назначение',panelFeatures:'Основные функции',
+    panelConnects:'Подключено',panelStatus:'Статус',
+    catChannel:'Клиентский канал',catAbs:'Модуль ABS',catExternal:'Внешняя система',
+    statusLegacy:'Устаревший',statusActive:'Активный',statusRisk:'Рискованный',
+    footerBy:'Создано Зокировым Бобуром',
+    pageTitle:'Текущая IT-инфраструктура — Islamic Banking',
+  },
+  en:{
+    filterAll:'All',filterChannel:'Channels',filterAbs:'ABS',filterExternal:'External',
+    btnTobe:'TO-BE ARCHITECTURE →',
+    panelVendor:'Vendor',panelPurpose:'Purpose',panelFeatures:'Key Features',
+    panelConnects:'Connected',panelStatus:'Status',
+    catChannel:'Client Channel',catAbs:'ABS Module',catExternal:'External System',
+    statusLegacy:'Legacy',statusActive:'Active',statusRisk:'At Risk',
+    footerBy:'By Zokirov Bobur',
+    pageTitle:'Current IT Infrastructure — Islamic Banking',
+  }
+};
+
+/* ════════════════════════════════════════════════════
    DATA
 ════════════════════════════════════════════════════ */
 const ABS_INFO = {
@@ -444,116 +493,156 @@ const ABS_INFO = {
 const NODES = {
   /* CHANNELS — top */
   mobile:{label:'Mobile App',sub:'iOS · Android',x:240,y:20,w:140,h:48,cat:'channel',
-    purpose:"Mijozlarning mobil banking ilovasi. NGINX reverse proxy → ESB orqali ABS bilan bog'lanadi. ESB ichida faqat ABS API collection mavjud — to'liq Middleware imkoniyatlari yo'q. Ba'zi tashqi tizimlar (Uzcard/Humo) bilan alohida SDK orqali to'g'ridan-to'g'ri ulanadi.",
-    features:["NGINX → ESB → ABS yo'li","ESB faqat ABS API wrapper",'Uzcard/Humo SDK alohida integratsiya','Push notifikatsiyalar',"SAF/STIP, BPM yo'q"]
+    purpose:{
+      uz:"Mijozlarning mobil banking ilovasi. NGINX reverse proxy → ESB orqali ABS bilan bog'lanadi. ESB ichida faqat ABS API collection mavjud — to'liq Middleware imkoniyatlari yo'q. Ba'zi tashqi tizimlar (Uzcard/Humo) bilan alohida SDK orqali to'g'ridan-to'g'ri ulanadi.",
+      ru:"Мобильное банковское приложение клиентов. Подключается к ABS через NGINX → ESB. ESB содержит только коллекцию ABS API — полных возможностей Middleware нет. Некоторые внешние системы (Uzcard/Humo) подключаются напрямую через отдельный SDK.",
+      en:"Client mobile banking app. Connects to ABS via NGINX → ESB. ESB has only ABS API collection — no full Middleware capabilities. Some external systems (Uzcard/Humo) connect directly via separate SDK."
+    },
+    features:{
+      uz:["NGINX → ESB → ABS yo'li","ESB faqat ABS API wrapper",'Uzcard/Humo SDK alohida integratsiya','Push notifikatsiyalar',"SAF/STIP, BPM yo'q"],
+      ru:['Маршрут NGINX → ESB → ABS','ESB — только ABS API wrapper','Отдельная интеграция Uzcard/Humo SDK','Push-уведомления','SAF/STIP, BPM отсутствуют'],
+      en:['Route NGINX → ESB → ABS','ESB is ABS API wrapper only','Uzcard/Humo SDK separate integration','Push notifications','SAF/STIP, BPM absent']
+    }
   },
   web:{label:'Web Portal',sub:'Internet banking',x:410,y:20,w:140,h:48,cat:'channel',
-    purpose:"Internet banking portali. NGINX reverse proxy → ESB orqali ABS bilan ulanadi. ESB faqat ABS API collection — SWIFT, Didox uchun alohida adapter kerak.",
-    features:["NGINX → ESB → ABS yo'li","ESB faqat ABS API wrapper","SWIFT/Didox alohida bog'lanish",'MT940 statement eksport','Server-side SOAP wrappers']
+    purpose:{
+      uz:"Internet banking portali. NGINX reverse proxy → ESB orqali ABS bilan ulanadi. ESB faqat ABS API collection — SWIFT, Didox uchun alohida adapter kerak.",
+      ru:"Портал интернет-банкинга. Подключается к ABS через NGINX → ESB. ESB — только коллекция ABS API; для SWIFT, Didox нужны отдельные адаптеры.",
+      en:"Internet banking portal. Connects to ABS via NGINX → ESB. ESB is ABS API collection only — separate adapter needed for SWIFT, Didox."
+    },
+    features:{
+      uz:["NGINX → ESB → ABS yo'li","ESB faqat ABS API wrapper","SWIFT/Didox alohida bog'lanish",'MT940 statement eksport','Server-side SOAP wrappers'],
+      ru:['Маршрут NGINX → ESB → ABS','ESB — только ABS API wrapper','Отдельное подключение SWIFT/Didox','Экспорт выписки MT940','Server-side SOAP wrappers'],
+      en:['Route NGINX → ESB → ABS','ESB is ABS API wrapper only','SWIFT/Didox separate connection','MT940 statement export','Server-side SOAP wrappers']
+    }
   },
   atm_ch:{label:'ATM/POS ch.',sub:'ISO 8583',x:620,y:20,w:140,h:48,cat:'channel',
-    purpose:"ATM va POS terminallari ISO 8583 protokoli bilan to'g'ridan-to'g'ri ABS va Uzcard/Humo switchi bilan ulanadi. Middleware yo'q — ABS off-line bo'lsa to'lov to'xtaydi.",
-    features:['ISO 8583 native','Uzcard/Humo bilan direct switching',"ABS off-line → tranzaksiya rad etiladi","SAF/STIP rejimi yo'q"]
+    purpose:{
+      uz:"ATM va POS terminallari ISO 8583 protokoli bilan to'g'ridan-to'g'ri ABS va Uzcard/Humo switchi bilan ulanadi. Middleware yo'q — ABS off-line bo'lsa to'lov to'xtaydi.",
+      ru:"Банкоматы и POS-терминалы подключаются напрямую к ABS и Uzcard/Humo switch по протоколу ISO 8583. Middleware отсутствует — при отключении ABS платежи останавливаются.",
+      en:"ATMs and POS terminals connect directly to ABS and Uzcard/Humo switch via ISO 8583. No Middleware — if ABS goes offline, payments stop."
+    },
+    features:{
+      uz:['ISO 8583 native','Uzcard/Humo bilan direct switching',"ABS off-line → tranzaksiya rad etiladi","SAF/STIP rejimi yo'q"],
+      ru:['ISO 8583 native','Прямое switching с Uzcard/Humo','ABS offline → транзакция отклонена','Режим SAF/STIP отсутствует'],
+      en:['ISO 8583 native','Direct switching with Uzcard/Humo','ABS offline → transaction rejected','SAF/STIP mode absent']
+    }
   },
 
   /* NGINX / ESB — oraliq qatlam */
   nginx:{label:'NGINX · Reverse Proxy',sub:'',x:232,y:76,w:326,h:20,cat:'proxy',
-    purpose:"Oddiy reverse proxy — Mobile App va Web Portal so'rovlarini qabul qilib ESB ga yo'naltiradi. SSL termination va basic routing mavjud. WAF, OAuth2, rate limiting, DDoS himoya va monitoring imkoniyatlari yo'q.",
-    features:["Reverse proxy — request forwarding","SSL/TLS termination","Basic load balancing","WAF, OAuth2, Rate limiting YO'Q","Monitoring / tracing YO'Q"]
+    purpose:{
+      uz:"Oddiy reverse proxy — Mobile App va Web Portal so'rovlarini qabul qilib ESB ga yo'naltiradi. SSL termination va basic routing mavjud. WAF, OAuth2, rate limiting, DDoS himoya va monitoring imkoniyatlari yo'q.",
+      ru:"Простой reverse proxy — принимает запросы Mobile App и Web Portal, направляет в ESB. Есть SSL termination и базовая маршрутизация. WAF, OAuth2, rate limiting, защита от DDoS и мониторинг отсутствуют.",
+      en:"Simple reverse proxy — receives Mobile App and Web Portal requests, forwards to ESB. Has SSL termination and basic routing. WAF, OAuth2, rate limiting, DDoS protection and monitoring absent."
+    },
+    features:{
+      uz:["Reverse proxy — request forwarding","SSL/TLS termination","Basic load balancing","WAF, OAuth2, Rate limiting YO'Q","Monitoring / tracing YO'Q"],
+      ru:['Reverse proxy — переадресация запросов','SSL/TLS termination','Базовая балансировка нагрузки','WAF, OAuth2, Rate limiting ОТСУТСТВУЮТ','Monitoring / tracing ОТСУТСТВУЕТ'],
+      en:['Reverse proxy — request forwarding','SSL/TLS termination','Basic load balancing','WAF, OAuth2, Rate limiting ABSENT','Monitoring / tracing ABSENT']
+    }
   },
   esb:{label:'ESB',sub:'ABS API collection only',x:232,y:106,w:326,h:54,cat:'esb',
-    purpose:"Enterprise Service Bus — ichida faqat ABS modullariga mo'ljallangan API collection joylashgan. To'liq Middleware imkoniyatlari (Kafka message queue, BPM/Saga pattern, SAF/STIP offline rejim, DR/Failover, APM monitoring) mavjud emas.",
-    features:["ABS REST/SOAP API collection","Basic request routing","Kafka / Message Queue YO'Q","BPM / Saga pattern YO'Q","SAF/STIP (offline rejim) YO'Q","DR/Failover YO'Q","APM monitoring YO'Q"]
+    purpose:{
+      uz:"Enterprise Service Bus — ichida faqat ABS modullariga mo'ljallangan API collection joylashgan. To'liq Middleware imkoniyatlari (Kafka message queue, BPM/Saga pattern, SAF/STIP offline rejim, DR/Failover, APM monitoring) mavjud emas.",
+      ru:"Enterprise Service Bus — содержит только коллекцию API для модулей ABS. Полные возможности Middleware (Kafka message queue, паттерн BPM/Saga, офлайн-режим SAF/STIP, DR/Failover, APM мониторинг) отсутствуют.",
+      en:"Enterprise Service Bus — contains only ABS module API collection. Full Middleware capabilities (Kafka message queue, BPM/Saga pattern, SAF/STIP offline mode, DR/Failover, APM monitoring) are absent."
+    },
+    features:{
+      uz:["ABS REST/SOAP API collection","Basic request routing","Kafka / Message Queue YO'Q","BPM / Saga pattern YO'Q","SAF/STIP (offline rejim) YO'Q","DR/Failover YO'Q","APM monitoring YO'Q"],
+      ru:['ABS REST/SOAP API collection','Базовая маршрутизация запросов','Kafka / Message Queue ОТСУТСТВУЕТ','BPM / Saga pattern ОТСУТСТВУЕТ','SAF/STIP (офлайн-режим) ОТСУТСТВУЕТ','DR/Failover ОТСУТСТВУЕТ','APM monitoring ОТСУТСТВУЕТ'],
+      en:['ABS REST/SOAP API collection','Basic request routing','Kafka / Message Queue ABSENT','BPM / Saga pattern ABSENT','SAF/STIP (offline mode) ABSENT','DR/Failover ABSENT','APM monitoring ABSENT']
+    }
   },
 
   /* INTERNAL — inside ABS */
   crm:{label:'CRM',sub:'',cat:'internal',
-    purpose:"Mijoz munosabatlari moduli — ABS ichida joylashgan. KYC, lead va complaint workflow.",
-    features:['Lead funnel','KYC workflow','360° mijoz profili','Branch tarmog\'i'],
+    purpose:{uz:"Mijoz munosabatlari moduli — ABS ichida joylashgan. KYC, lead va complaint workflow.",ru:"Модуль управления клиентскими отношениями — расположен внутри ABS. KYC, lead и complaint workflow.",en:"Customer relationship module — located inside ABS. KYC, lead and complaint workflow."},
+    features:{uz:['Lead funnel','KYC workflow','360° mijoz profili','Branch tarmog\'i'],ru:['Воронка лидов','KYC workflow','Профиль клиента 360°','Сеть филиалов'],en:['Lead funnel','KYC workflow','360° client profile','Branch network']},
     inside:'ABS · iABS/NCI'
   },
   dwh:{label:'DWH & BI',sub:'OLAP · Reports',cat:'internal',
-    purpose:"Tarixiy ma'lumotlar va boshqaruv hisobotlari. ABS DB ustidan to'g'ridan-to'g'ri ETL ishlaydi.",
-    features:['Kunlik ETL ABS DB dan','CBU XBRL eksport','OLAP cube','Manual report builder'],
+    purpose:{uz:"Tarixiy ma'lumotlar va boshqaruv hisobotlari. ABS DB ustidan to'g'ridan-to'g'ri ETL ishlaydi.",ru:"Исторические данные и управленческие отчёты. ETL работает напрямую поверх базы ABS.",en:"Historical data and management reports. ETL runs directly on top of ABS DB."},
+    features:{uz:['Kunlik ETL ABS DB dan','CBU XBRL eksport','OLAP cube','Manual report builder'],ru:['Ежедневный ETL из ABS DB','Экспорт CBU XBRL','OLAP cube','Ручной построитель отчётов'],en:['Daily ETL from ABS DB','CBU XBRL export','OLAP cube','Manual report builder']},
     inside:'ABS · iABS/NCI'
   },
   card_mgmt:{label:'Card Mgmt',sub:'Uzcard · Humo · Visa',cat:'internal',
-    purpose:"Kartalarni boshqarish moduli — chiqarish, bloklash, limitlar. Uzcard/Humo bilan direct integration.",
-    features:['Karta hayoti boshqaruvi','PIN management','EMV personalizatsiya','3D Secure ABS ichida'],
+    purpose:{uz:"Kartalarni boshqarish moduli — chiqarish, bloklash, limitlar. Uzcard/Humo bilan direct integration.",ru:"Модуль управления картами — выпуск, блокировка, лимиты. Прямая интеграция с Uzcard/Humo.",en:"Card management module — issuance, blocking, limits. Direct integration with Uzcard/Humo."},
+    features:{uz:['Karta hayoti boshqaruvi','PIN management','EMV personalizatsiya','3D Secure ABS ichida'],ru:['Управление жизненным циклом карты','PIN management','EMV персонализация','3D Secure внутри ABS'],en:['Card lifecycle management','PIN management','EMV personalization','3D Secure inside ABS']},
     inside:'ABS · iABS/NCI'
   },
   cash_mgmt:{label:'Cash Mgmt',sub:'Multicurrency',cat:'internal',
-    purpose:"Naqd pul va kassir operatsiyalari moduli — ABS yadrosida.",
-    features:['Multi-currency: UZS, USD, EUR','Teller / kassir tizimi','Vault management','FX kurs boshqaruvi'],
+    purpose:{uz:"Naqd pul va kassir operatsiyalari moduli — ABS yadrosida.",ru:"Модуль кассовых и наличных операций — в ядре ABS.",en:"Cash and teller operations module — in ABS core."},
+    features:{uz:['Multi-currency: UZS, USD, EUR','Teller / kassir tizimi','Vault management','FX kurs boshqaruvi'],ru:['Мультивалютность: UZS, USD, EUR','Teller / кассирская система','Vault management','Управление FX-курсами'],en:['Multi-currency: UZS, USD, EUR','Teller system','Vault management','FX rate management']},
     inside:'ABS · iABS/NCI'
   },
   billing:{label:'Billing',sub:'Prepaid · P2P',cat:'internal',
-    purpose:"To'lov va billing moduli — Paynet/Billz bilan direct integration.",
-    features:["Kommunal to'lovlar",'P2P o\'tkazma','Prepaid karta top-up','QR payment'],
+    purpose:{uz:"To'lov va billing moduli — Paynet/Billz bilan direct integration.",ru:"Модуль платежей и биллинга — прямая интеграция с Paynet/Billz.",en:"Payment and billing module — direct integration with Paynet/Billz."},
+    features:{uz:["Kommunal to'lovlar","P2P o'tkazma",'Prepaid karta top-up','QR payment'],ru:['Коммунальные платежи','P2P переводы','Пополнение prepaid карты','QR payment'],en:['Utility payments','P2P transfers','Prepaid card top-up','QR payment']},
     inside:'ABS · iABS/NCI'
   },
   intl_transfer:{label:"Int'l Transfer",sub:'SWIFT · RIA',cat:'internal',
-    purpose:"Xalqaro o'tkazmalar moduli — SWIFT bilan to'g'ridan-to'g'ri ulanadi.",
-    features:['SWIFT MT103/MT202','RIA / Western Union','Correspondent banking','FATCA/CRS'],
+    purpose:{uz:"Xalqaro o'tkazmalar moduli — SWIFT bilan to'g'ridan-to'g'ri ulanadi.",ru:"Модуль международных переводов — прямое подключение к SWIFT.",en:"International transfers module — direct connection to SWIFT."},
+    features:{uz:['SWIFT MT103/MT202','RIA / Western Union','Correspondent banking','FATCA/CRS'],ru:['SWIFT MT103/MT202','RIA / Western Union','Корреспондентский банкинг','FATCA/CRS'],en:['SWIFT MT103/MT202','RIA / Western Union','Correspondent banking','FATCA/CRS']},
     inside:'ABS · iABS/NCI'
   },
 
   /* COMPLIANCE — inside ABS */
   aml:{label:'AML / CFT',sub:'FATF · Sanctions',cat:'compliance',
-    purpose:"Pul yuvishga qarshi nazorat moduli — ABS ichida batch rejimida ishlaydi (real-time emas).",
-    features:['Kunlik batch screening','OFAC/UN sanctions list','PEP check','SAR ekport — manual'],
+    purpose:{uz:"Pul yuvishga qarshi nazorat moduli — ABS ichida batch rejimida ishlaydi (real-time emas).",ru:"Модуль AML — работает в пакетном режиме внутри ABS (не в реальном времени).",en:"AML monitoring module — runs in batch mode inside ABS (not real-time)."},
+    features:{uz:['Kunlik batch screening','OFAC/UN sanctions list','PEP check','SAR ekport — manual'],ru:['Ежедневная пакетная проверка','Санкционные списки OFAC/ООН','Проверка ПЭЛ','Экспорт SAR — вручную'],en:['Daily batch screening','OFAC/UN sanctions list','PEP check','SAR export — manual']},
     inside:'ABS · iABS/NCI'
   },
   sharia_core:{label:'Sharia Core',sub:'Manual rules',cat:'compliance',
-    purpose:"Sharia muvofiqlik nazorati — ABS ichida manual qoidalar bilan, post-transaction audit.",
-    features:['Post-transaction audit','Manual AAOIFI checklist','Murabaha/Ijara templates','Sharia board oylik audit'],
+    purpose:{uz:"Sharia muvofiqlik nazorati — ABS ichida manual qoidalar bilan, post-transaction audit.",ru:"Контроль соответствия шариату — ручные правила внутри ABS, пост-транзакционный аудит.",en:"Sharia compliance control — manual rules inside ABS, post-transaction audit."},
+    features:{uz:['Post-transaction audit','Manual AAOIFI checklist','Murabaha/Ijara templates','Sharia board oylik audit'],ru:['Постранзакционный аудит','Ручной чеклист AAOIFI','Шаблоны Мурабаха/Иджара','Ежемесячный аудит Sharia board'],en:['Post-transaction audit','Manual AAOIFI checklist','Murabaha/Ijara templates','Monthly Sharia board audit']},
     inside:'ABS · iABS/NCI'
   },
   atm_mgmt:{label:'ATM/POS Mgmt',sub:'Health · Monitor',cat:'compliance',
-    purpose:"Terminallarni monitoring qiluvchi modul — ABS ichidagi loglar asosida ishlaydi.",
-    features:['Terminal uptime','Cash level monitoring','Manual ticket','SLA report — kunlik'],
+    purpose:{uz:"Terminallarni monitoring qiluvchi modul — ABS ichidagi loglar asosida ishlaydi.",ru:"Модуль мониторинга терминалов — работает на основе логов внутри ABS.",en:"Terminal monitoring module — works based on logs inside ABS."},
+    features:{uz:['Terminal uptime','Cash level monitoring','Manual ticket','SLA report — kunlik'],ru:['Uptime терминала','Мониторинг уровня наличных','Ручная заявка','Отчёт SLA — ежедневный'],en:['Terminal uptime','Cash level monitoring','Manual ticket','SLA report — daily']},
     inside:'ABS · iABS/NCI'
   },
   incident:{label:'Incident',sub:'ITIL · SLA',cat:'compliance',
-    purpose:"IT incident boshqaruvi — ABS log va e-mail asosida.",
-    features:['Email-based ticket','Manual escalation','Kunlik SLA report','PIR — Word fayl'],
+    purpose:{uz:"IT incident boshqaruvi — ABS log va e-mail asosida.",ru:"Управление IT-инцидентами — на основе логов ABS и электронной почты.",en:"IT incident management — based on ABS logs and email."},
+    features:{uz:['Email-based ticket','Manual escalation','Kunlik SLA report','PIR — Word fayl'],ru:['Тикет на основе email','Ручная эскалация','Ежедневный отчёт SLA','PIR — файл Word'],en:['Email-based ticket','Manual escalation','Daily SLA report','PIR — Word file']},
     inside:'ABS · iABS/NCI'
   },
 
   /* EXTERNAL — right */
   uzcard:{label:'Uzcard / Humo',sub:'National switch',x:980,y:164,w:180,h:54,cat:'external',
-    purpose:"Milliy to'lov tizimlari. Mobile, ATM, Card Mgmt — har biri alohida konnektor bilan bog'lanadi.",
-    features:['Real-time authorization','Settlement T+0','Dispute / chargeback','3 ta alohida integratsiya']
+    purpose:{uz:"Milliy to'lov tizimlari. Mobile, ATM, Card Mgmt — har biri alohida konnektor bilan bog'lanadi.",ru:"Национальные платёжные системы. Mobile, ATM, Card Mgmt — каждый подключается отдельным коннектором.",en:"National payment systems. Mobile, ATM, Card Mgmt — each connects with a separate connector."},
+    features:{uz:['Real-time authorization','Settlement T+0','Dispute / chargeback','3 ta alohida integratsiya'],ru:['Авторизация в реальном времени','Расчёт T+0','Dispute / chargeback','3 отдельные интеграции'],en:['Real-time authorization','Settlement T+0','Dispute / chargeback','3 separate integrations']}
   },
   swift:{label:'SWIFT / Remit.',sub:'MT103 · RIA',x:980,y:236,w:180,h:54,cat:'external',
-    purpose:"Xalqaro o'tkazma tarmog'i. Web Portal va Int'l Transfer moduli bilan alohida ulanish.",
-    features:['SWIFT BIC','MT103 / MT202','RIA Money Transfer API','Sanctions screening manual']
+    purpose:{uz:"Xalqaro o'tkazma tarmog'i. Web Portal va Int'l Transfer moduli bilan alohida ulanish.",ru:"Сеть международных переводов. Web Portal и модуль Int'l Transfer подключаются отдельно.",en:"International transfer network. Web Portal and Int'l Transfer module connect separately."},
+    features:{uz:['SWIFT BIC','MT103 / MT202','RIA Money Transfer API','Sanctions screening manual'],ru:['SWIFT BIC','MT103 / MT202','API RIA Money Transfer','Ручная проверка санкций'],en:['SWIFT BIC','MT103 / MT202','RIA Money Transfer API','Sanctions screening manual']}
   },
   cbu:{label:'CBU Regulator',sub:'CERBER · XBRL',x:980,y:308,w:180,h:54,cat:'external',
-    purpose:"Markaziy Bank hisobotlari. DWH dan kunlik file upload orqali.",
-    features:['CERBER reporting','XBRL eksport','Law 1126','Manual file upload — kunlik']
+    purpose:{uz:"Markaziy Bank hisobotlari. DWH dan kunlik file upload orqali.",ru:"Отчётность Центрального банка. Ежедневная загрузка файлов из DWH.",en:"Central Bank reporting. Daily file upload from DWH."},
+    features:{uz:['CERBER reporting','XBRL eksport','Law 1126','Manual file upload — kunlik'],ru:['CERBER reporting','Экспорт XBRL','Закон 1126','Ручная загрузка файлов — ежедневно'],en:['CERBER reporting','XBRL export','Law 1126','Manual file upload — daily']}
   },
   paynet:{label:'Paynet / Billz',sub:'Bill payment',x:980,y:380,w:180,h:54,cat:'external',
-    purpose:"Kommunal to'lov aggregatori. Billing moduli va Mobile App — ikkita alohida ulanish.",
-    features:['200+ provayder','Real-time confirmation','REST + SOAP','Bevosita Mobile App va ABS ulanishi']
+    purpose:{uz:"Kommunal to'lov aggregatori. Billing moduli va Mobile App — ikkita alohida ulanish.",ru:"Агрегатор коммунальных платежей. Модуль Billing и Mobile App подключаются отдельно.",en:"Utility payment aggregator. Billing module and Mobile App connect separately."},
+    features:{uz:['200+ provayder','Real-time confirmation','REST + SOAP','Bevosita Mobile App va ABS ulanishi'],ru:['200+ провайдеров','Подтверждение в реальном времени','REST + SOAP','Прямое подключение Mobile App и ABS'],en:['200+ providers','Real-time confirmation','REST + SOAP','Direct Mobile App and ABS connection']}
   },
   didox:{label:'Didox / Soliq.uz',sub:'E-invoice · Tax',x:980,y:452,w:180,h:54,cat:'external',
-    purpose:"E-faktura va soliq tizimi. Web Portal va Int'l Transfer alohida ulanadi.",
-    features:['E-invoice (Murabaha)','Soliq.uz API','E-imzo PKCS#7','VAT calc']
+    purpose:{uz:"E-faktura va soliq tizimi. Web Portal va Int'l Transfer alohida ulanadi.",ru:"Система электронных счетов-фактур и налогов. Web Portal и Int'l Transfer подключаются отдельно.",en:"E-invoice and tax system. Web Portal and Int'l Transfer connect separately."},
+    features:{uz:['E-invoice (Murabaha)','Soliq.uz API','E-imzo PKCS#7','VAT calc'],ru:['E-invoice (Мурабаха)','API Soliq.uz','E-imzo PKCS#7','Расчёт НДС'],en:['E-invoice (Murabaha)','Soliq.uz API','E-imzo PKCS#7','VAT calc']}
   },
   tifc:{label:'TIFC / E-imzo',sub:'0% VAT · E-sign',x:980,y:524,w:180,h:54,cat:'external',
-    purpose:"TIFC rezidentligi va E-imzo. Corp API va ABS bilan alohida bog'lanish.",
-    features:['Decree 48 · TIFC','0% VAT','E-imzo PKCS#7','MLETR flow']
+    purpose:{uz:"TIFC rezidentligi va E-imzo. Corp API va ABS bilan alohida bog'lanish.",ru:"Резидентство TIFC и E-imzo. Corp API и ABS подключаются отдельно.",en:"TIFC residency and E-imzo. Corp API and ABS connect separately."},
+    features:{uz:['Decree 48 · TIFC','0% VAT','E-imzo PKCS#7','MLETR flow'],ru:['Декрет 48 · TIFC','0% НДС','E-imzo PKCS#7','MLETR flow'],en:['Decree 48 · TIFC','0% VAT','E-imzo PKCS#7','MLETR flow']}
   }
 };
 
 const COLORS = {
-  channel:    {bg:'#09162A',br:'#2E78C7',text:'#6BA8E0',meta:'Mijoz kanali',brCol:'rgba(46,120,199,.4)',bgCol:'rgba(46,120,199,.08)'},
+  channel:    {bg:'#09162A',br:'#2E78C7',text:'#6BA8E0',get meta(){return T[L].catChannel},brCol:'rgba(46,120,199,.4)',bgCol:'rgba(46,120,199,.08)'},
   proxy:      {bg:'rgba(46,120,199,.04)',br:'rgba(46,120,199,.38)',text:'#6BA8E0',meta:'Reverse Proxy',brCol:'rgba(46,120,199,.5)',bgCol:'rgba(46,120,199,.06)'},
-  esb:        {bg:'rgba(158,98,16,.07)',br:'rgba(158,98,16,.55)',text:'#D4944A',meta:'ESB (cheklangan)',brCol:'rgba(158,98,16,.5)',bgCol:'rgba(158,98,16,.09)'},
-  internal:   {bg:'#071F14',br:'#16845E',text:'#4DB893',meta:'ABS ichki modul',brCol:'rgba(22,132,94,.4)',bgCol:'rgba(22,132,94,.08)'},
-  external:   {bg:'#1A1200',br:'#9E6210',text:'#D4944A',meta:'Tashqi tizim',brCol:'rgba(158,98,16,.4)',bgCol:'rgba(158,98,16,.08)'},
-  compliance: {bg:'#180606',br:'#8B2020',text:'#D06060',meta:'ABS compliance modul',brCol:'rgba(139,32,32,.4)',bgCol:'rgba(139,32,32,.08)'}
+  esb:        {bg:'rgba(158,98,16,.07)',br:'rgba(158,98,16,.55)',text:'#D4944A',meta:'ESB',brCol:'rgba(158,98,16,.5)',bgCol:'rgba(158,98,16,.09)'},
+  internal:   {bg:'#071F14',br:'#16845E',text:'#4DB893',get meta(){return T[L].catAbs},brCol:'rgba(22,132,94,.4)',bgCol:'rgba(22,132,94,.08)'},
+  external:   {bg:'#1A1200',br:'#9E6210',text:'#D4944A',get meta(){return T[L].catExternal},brCol:'rgba(158,98,16,.4)',bgCol:'rgba(158,98,16,.08)'},
+  compliance: {bg:'#180606',br:'#8B2020',text:'#D06060',get meta(){return T[L].catAbs},brCol:'rgba(139,32,32,.4)',bgCol:'rgba(139,32,32,.08)'}
 };
 
 /* ════════════════════════════════════════════════════
@@ -688,11 +777,10 @@ function buildConnectors(){
 
 function buildLegend(){
   const items = [
-    {label:'Kanallar', color:'#2E78C7'},
-    {label:'ABS (Core Banking)', color:'#16845E'},
-    {label:'Ichki modullar', color:'#16845E'},
-    {label:'Compliance modullar', color:'#8B2020'},
-    {label:'Tashqi tizimlar', color:'#9E6210'}
+    {label:T[L].filterChannel,  color:'#2E78C7'},
+    {label:T[L].filterAbs,      color:'#16845E'},
+    {label:T[L].catAbs,         color:'#8B2020'},
+    {label:T[L].filterExternal, color:'#9E6210'}
   ];
   const leg = document.getElementById('legend');
   leg.innerHTML = items.map(it=>
@@ -736,9 +824,9 @@ function openPanel(id){
   } else if (d.cat==='channel'){
     html += `<div class="warn-callout">⚠ Bu kanal ABS ga <b>NGINX → ESB</b> orqali ulanadi. ESB faqat ABS API collection — to'liq Middleware imkoniyatlari yo'q.</div>`;
   }
-  html += `<div class="prow"><div class="prow-lbl">Vazifa</div><div class="prow-val">${d.purpose}</div></div>`;
+  html += `<div class="prow"><div class="prow-lbl">${T[L].panelPurpose}</div><div class="prow-val">${t(d.purpose)}</div></div>`;
   html += `<div class="divider"></div>`;
-  html += `<div class="prow"><div class="prow-lbl">Xususiyatlar</div><ul class="feat-list">${d.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>`;
+  html += `<div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(d.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>`;
   document.getElementById('panelBody').innerHTML = html;
   document.getElementById('panel').classList.add('open');
 }
@@ -806,16 +894,30 @@ document.getElementById('absHub').addEventListener('click', (e)=>{
   switchVendor(active ? active.dataset.vendor : 'iABS');
 });
 
+function applyUI() {
+  const fa = document.getElementById('fb-all');      if (fa) fa.textContent = T[L].filterAll;
+  const fc = document.getElementById('fb-channel');  if (fc) fc.textContent = T[L].filterChannel;
+  const fab = document.getElementById('fb-abs');     if (fab) fab.textContent = T[L].filterAbs;
+  const fe = document.getElementById('fb-external'); if (fe) fe.textContent = T[L].filterExternal;
+  const fb = document.getElementById('footer-by');   if (fb) fb.textContent = T[L].footerBy;
+  document.title = T[L].pageTitle;
+  const tobe = document.querySelector('.logo-badge-btn');
+  if (tobe) tobe.textContent = T[L].btnTobe;
+  document.querySelectorAll('.lang-sw button').forEach(b => b.classList.toggle('active', b.dataset.lang === L));
+}
+
 /* INIT */
 setupDefs();
 buildNodes();
 buildConnectors();
+buildLegend();
+applyUI();
 scaleCanvas();
 window.addEventListener('resize', scaleCanvas);
 </script>
 
 <footer class="site-footer">
-  <span class="footer-by">Zokirov Bobur tomonidan</span>
+  <span class="footer-by" id="footer-by">Zokirov Bobur tomonidan</span>
   <span class="footer-sep">·</span>
   <a href="https://t.me/zokirovbobur" target="_blank" class="footer-link footer-tg">Telegram</a>
   <span class="footer-sep">·</span>

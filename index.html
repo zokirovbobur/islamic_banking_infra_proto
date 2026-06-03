@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="uz"><head>
+﻿<!DOCTYPE html><html lang="uz"><head>
 
 
 <meta charset="UTF-8">
@@ -518,6 +518,11 @@ body::before{
   padding:3px 9px;border-radius:20px;
   letter-spacing:.05em;
 }
+/* ── LANG SWITCHER ─────────────────────────── */
+.lang-sw{display:flex;gap:3px;margin-left:10px}
+.lang-sw button{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.06em;padding:4px 9px;border-radius:3px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.4);cursor:pointer;transition:all .15s}
+.lang-sw button:hover{color:#fff;background:rgba(255,255,255,.1)}
+.lang-sw button.active{color:#fff;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4)}
 /* ── DEMO OVERLAY ─────────────────────────── */
 .demo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;}
 .demo-bar{background:#064D35;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:46px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.1);}
@@ -556,11 +561,16 @@ body::before{
   <div class="logo"><span style="color:var(--green-l)">TO-BE</span> · IT INFRA<a class="logo-badge-btn" href="joriy-infrastruktura.html">AS-IS LEGACY →</a></div>
   <div class="topbar-center"></div>
   <div class="filters">
-    <button class="filter-btn active" data-f="all" onclick="setFilter(this,'all')">Hammasi</button>
-    <button class="filter-btn" data-f="internal" onclick="setFilter(this,'internal')">Ichki</button>
-    <button class="filter-btn" data-f="external" onclick="setFilter(this,'external')">Tashqi</button>
-    <button class="filter-btn" data-f="compliance" onclick="setFilter(this,'compliance')">Compliance</button>
-    <button class="filter-btn" data-f="channel" onclick="setFilter(this,'channel')">Kanallar</button>
+    <button class="filter-btn active" data-f="all" onclick="setFilter(this,'all')" id="fb-all">Hammasi</button>
+    <button class="filter-btn" data-f="internal" onclick="setFilter(this,'internal')" id="fb-internal">Ichki</button>
+    <button class="filter-btn" data-f="external" onclick="setFilter(this,'external')" id="fb-external">Tashqi</button>
+    <button class="filter-btn" data-f="compliance" onclick="setFilter(this,'compliance')" id="fb-compliance">Compliance</button>
+    <button class="filter-btn" data-f="channel" onclick="setFilter(this,'channel')" id="fb-channel">Kanallar</button>
+  </div>
+  <div class="lang-sw">
+    <button onclick="setLang('uz')" data-lang="uz">UZ</button>
+    <button onclick="setLang('ru')" data-lang="ru">RU</button>
+    <button onclick="setLang('en')" data-lang="en">EN</button>
   </div>
 </div>
 
@@ -667,33 +677,93 @@ body::before{
   </div>
   <div class="panel-body">
     <div class="prow">
-      <div class="prow-lbl">Vendor / Platforma</div>
+      <div class="prow-lbl" id="lbl-vendor">Vendor / Platforma</div>
       <div class="prow-val mono" id="pVendor">Camunda BPM · Activiti · Avanza native BPM engine</div>
     </div>
     <div class="divider"></div>
     <div class="prow">
-      <div class="prow-lbl">Maqsad</div>
-      <div class="prow-val" id="pPurpose">Murakkab ko'p bosqichli bank jarayonlarini avtomatlashtiradi — financing ariza qabul qilishdan to disbursement gacha har bir qadam tartibli bajariladi. Saga pattern orqali distributed transaction xatolarini ham boshqaradi.</div>
+      <div class="prow-lbl" id="lbl-purpose">Maqsad</div>
+      <div class="prow-val" id="pPurpose"></div>
     </div>
     <div class="divider"></div>
     <div class="prow">
-      <div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list" id="pFeatures"><li>BPMN 2.0 standart — vizual jarayon dizayni</li><li>Saga pattern — distributed transaction rollback</li><li>Financing workflow: ariza → KYC → Sharia check → tasdiq → disbursement</li><li>Parallel gateway — bir vaqtda bir necha approval oqimi</li><li>Timer event — muddat o'tsa avtomatik eslatma yoki bekor qilish</li><li>Audit trail — har bir qadam vaqt tamg'asi bilan saqlanadi</li><li>REST API orqali tashqi tizimlar bilan integratsiya</li><li>Low-code modelling — IT bo'lmagan xodimlar ham jarayon chiza oladi</li></ul>
+      <div class="prow-lbl" id="lbl-features">Asosiy xususiyatlar</div>
+      <ul class="feat-list" id="pFeatures"></ul>
     </div>
     <div class="divider"></div>
     <div class="prow">
-      <div class="prow-lbl">Middleware orqali ulangan</div>
-      <div class="chip-row" id="pConnects"><span class="chip">Core Banking ABS</span><span class="chip">Sharia Core</span><span class="chip">AML/CFT</span><span class="chip">CRM</span></div>
+      <div class="prow-lbl" id="lbl-connects">Middleware orqali ulangan</div>
+      <div class="chip-row" id="pConnects"></div>
     </div>
     <div class="divider"></div>
     <div class="prow">
-      <div class="prow-lbl">Holat</div>
-      <div id="pStatus"><span class="status-badge" style="color:#D06060;border-color:#8B202044;background:rgba(139,32,32,.12)">Majburiy</span></div>
+      <div class="prow-lbl" id="lbl-status">Holat</div>
+      <div id="pStatus"></div>
     </div>
   </div>
 </div>
 
 <script>
+/* ════════════════════════════════════════════════════════════
+   I18N
+════════════════════════════════════════════════════════════ */
+const L = localStorage.getItem('ib_lang') || 'uz';
+function t(v){return typeof v==='object'?(v[L]||v.uz||v):v;}
+function setLang(l){localStorage.setItem('ib_lang',l);location.reload();}
+const T={
+  uz:{
+    filterAll:'Hammasi',filterInternal:'Ichki',filterExternal:'Tashqi',
+    filterCompliance:'Compliance',filterChannel:'Kanallar',
+    btnAsis:'AS-IS LEGACY →',
+    panelVendor:'Vendor / Platforma',panelPurpose:'Maqsad',
+    panelFeatures:'Asosiy xususiyatlar',panelConnects:'Middleware orqali ulangan',
+    panelStatus:'Holat',panelWhen:'Qachon tanlash kerak',
+    panelPros:'Afzalliklari',panelCons:'Kamchiliklari',
+    catHub:'Middleware Hub',catChannel:'Mijoz kanali',
+    catInternal:'Ichki tizim',catExternal:'Tashqi tizim',
+    catCompliance:'Compliance',catGateway:'API Gateway',
+    statusRequired:'Majburiy',statusRecommended:'Tavsiya etiladi',statusEvaluate:"Ko'rib chiqiladi",
+    legChannels:'Kanallar',legInternal:'Ichki tizimlar',legExternal:'Tashqi tizimlar',
+    legCompliance:'Compliance',legMiddleware:'Middleware',legGateway:'API Gateway',
+    footerBy:'Zokirov Bobur tomonidan',catMwModule:'Middleware moduli',
+    pageTitle:'Islamic Banking IT Infrastructure — Architecture Explorer',
+  },
+  ru:{
+    filterAll:'Все',filterInternal:'Внутренние',filterExternal:'Внешние',
+    filterCompliance:'Compliance',filterChannel:'Каналы',
+    btnAsis:'AS-IS LEGACY →',
+    panelVendor:'Вендор / Платформа',panelPurpose:'Назначение',
+    panelFeatures:'Основные функции',panelConnects:'Подключено через Middleware',
+    panelStatus:'Статус',panelWhen:'Когда выбирать',
+    panelPros:'Преимущества',panelCons:'Недостатки',
+    catHub:'Middleware Hub',catChannel:'Клиентский канал',
+    catInternal:'Внутренняя система',catExternal:'Внешняя система',
+    catCompliance:'Compliance',catGateway:'API Gateway',
+    statusRequired:'Обязательно',statusRecommended:'Рекомендуется',statusEvaluate:'На рассмотрении',
+    legChannels:'Каналы',legInternal:'Внутренние системы',legExternal:'Внешние системы',
+    legCompliance:'Compliance',legMiddleware:'Middleware',legGateway:'API Gateway',
+    footerBy:'Создано Зокировым Бобуром',catMwModule:'Модуль Middleware',
+    pageTitle:'Islamic Banking IT Infrastructure — Architecture Explorer',
+  },
+  en:{
+    filterAll:'All',filterInternal:'Internal',filterExternal:'External',
+    filterCompliance:'Compliance',filterChannel:'Channels',
+    btnAsis:'AS-IS LEGACY →',
+    panelVendor:'Vendor / Platform',panelPurpose:'Purpose',
+    panelFeatures:'Key Features',panelConnects:'Connected via Middleware',
+    panelStatus:'Status',panelWhen:'When to Choose',
+    panelPros:'Pros',panelCons:'Cons',
+    catHub:'Middleware Hub',catChannel:'Client Channel',
+    catInternal:'Internal System',catExternal:'External System',
+    catCompliance:'Compliance',catGateway:'API Gateway',
+    statusRequired:'Required',statusRecommended:'Recommended',statusEvaluate:'Evaluate',
+    legChannels:'Channels',legInternal:'Internal Systems',legExternal:'External Systems',
+    legCompliance:'Compliance',legMiddleware:'Middleware',legGateway:'API Gateway',
+    footerBy:'By Zokirov Bobur',catMwModule:'Middleware Module',
+    pageTitle:'Islamic Banking IT Infrastructure — Architecture Explorer',
+  }
+};
+
 /* ════════════════════════════════════════════════════════════
    NODE DATA
 ════════════════════════════════════════════════════════════ */
@@ -702,9 +772,17 @@ const N = {
     label:'Middleware',sub:'Rendezvous · Velmie · Kinective',
     x:470,y:228,w:320,h:220,cat:'hub',
     vendor:'Avanza Rendezvous · Velmie · Kinective — 3 ta variant',
-    purpose:"Markaziy hub — barcha tizimlar faqat Middleware orqali muloqot qiladi. Hech bir tizim boshqasi bilan to'g'ridan-to'g'ri gaplashmaydi. PCI DSS sertifikatlangan. SAF/STIP rejimi Core Banking offline bo'lganda ham tizimni to'xtatmaydi.",
-    features:['ISO 8583 native — ATM/POS switch built-in',"SAF/STIP: Core offline bo'lsa tranzaksiyalar saqlanadi",'Kafka / MQ event bus — async guaranteed delivery','BPM / Saga pattern — distributed transaction manager','PCI DSS + PADSS + EMV to\'liq sertifikatlangan','DR / Failover — active-active cluster','100+ bank implementatsiyasi dunyo bo\'yicha'],
-    connects:['Barcha tizimlar — markaziy nuqta'],
+    purpose:{
+      uz:"Markaziy hub — barcha tizimlar faqat Middleware orqali muloqot qiladi. Hech bir tizim boshqasi bilan to'g'ridan-to'g'ri gaplashmaydi. PCI DSS sertifikatlangan. SAF/STIP rejimi Core Banking offline bo'lganda ham tizimni to'xtatmaydi.",
+      ru:"Центральный хаб — все системы взаимодействуют исключительно через Middleware. Ни одна система не общается с другой напрямую. Сертифицирован по PCI DSS. Режим SAF/STIP обеспечивает работу даже при недоступности Core Banking.",
+      en:"Central hub — all systems communicate only via Middleware. No system talks directly to another. PCI DSS certified. SAF/STIP mode keeps operations running even when Core Banking is offline."
+    },
+    features:{
+      uz:['ISO 8583 native — ATM/POS switch built-in',"SAF/STIP: Core offline bo'lsa tranzaksiyalar saqlanadi",'Kafka / MQ event bus — async guaranteed delivery','BPM / Saga pattern — distributed transaction manager',"PCI DSS + PADSS + EMV to'liq sertifikatlangan",'DR / Failover — active-active cluster',"100+ bank implementatsiyasi dunyo bo'yicha"],
+      ru:['ISO 8583 native — встроенный ATM/POS switch','SAF/STIP: транзакции сохраняются при недоступности Core','Kafka / MQ event bus — асинхронная гарантированная доставка','BPM / Saga pattern — менеджер распределённых транзакций','Полная сертификация PCI DSS + PADSS + EMV','DR / Failover — active-active кластер','100+ реализаций в банках по всему миру'],
+      en:['ISO 8583 native — ATM/POS switch built-in','SAF/STIP: transactions stored if Core is offline','Kafka / MQ event bus — async guaranteed delivery','BPM / Saga pattern — distributed transaction manager','Full PCI DSS + PADSS + EMV certification','DR / Failover — active-active cluster','100+ bank implementations worldwide']
+    },
+    connects:{uz:['Barcha tizimlar — markaziy nuqta'],ru:['Все системы — центральная точка'],en:['All systems — central hub']},
     status:'required',
     multiOption: true,
     mwOption: true
@@ -713,8 +791,16 @@ const N = {
     label:'API Gateway',sub:'WAF · OAuth2 · mTLS · Rate Limiting · DDoS',
     x:276,y:70,w:698,h:28,cat:'gateway',
     vendor:'Kong Enterprise · AWS API Gateway · NGINX Plus — 3 ta variant',
-    purpose:"Barcha kanallardan keluvchi trafikni filtrlaydi, autentifikatsiya va himoyani bajarib, Middleware ga xavfsiz holda yo'naltiradi. Uchta platforma mavjud.",
-    features:['OAuth2 / OpenID Connect — token validation','mTLS — mutual TLS encryption','WAF — OWASP Top-10 himoyasi','Rate limiting + DDoS protection','JWT / API key management','Request/response logging — audit trail'],
+    purpose:{
+      uz:"Barcha kanallardan keluvchi trafikni filtrlaydi, autentifikatsiya va himoyani bajarib, Middleware ga xavfsiz holda yo'naltiradi. Uchta platforma mavjud.",
+      ru:"Фильтрует трафик со всех каналов, выполняет аутентификацию и защиту, безопасно направляет запросы в Middleware. Доступны три платформы.",
+      en:"Filters all incoming traffic from channels, handles authentication and security, and safely routes requests to Middleware. Three platforms available."
+    },
+    features:{
+      uz:['OAuth2 / OpenID Connect — token validation','mTLS — mutual TLS encryption','WAF — OWASP Top-10 himoyasi','Rate limiting + DDoS protection','JWT / API key management','Request/response logging — audit trail'],
+      ru:['OAuth2 / OpenID Connect — валидация токенов','mTLS — взаимное TLS шифрование','WAF — защита OWASP Top-10','Ограничение запросов + защита от DDoS','Управление JWT / API-ключами','Логирование запросов/ответов — аудит'],
+      en:['OAuth2 / OpenID Connect — token validation','mTLS — mutual TLS encryption','WAF — OWASP Top-10 protection','Rate limiting + DDoS protection','JWT / API key management','Request/response logging — audit trail']
+    },
     connects:['Middleware','Barcha kanallar'],
     status:'required',
     multiOption: true,
@@ -724,8 +810,16 @@ const N = {
     label:'Mobile App',sub:'iOS · Android',
     x:276,y:10,w:130,h:48,cat:'channel',
     vendor:"Avanza Symmetry · Tune Consulting · Inhouse — 3 ta variant",
-    purpose:"Retail va korporativ mijozlar uchun mobil banking — balans, o'tkazmalar, financing ariza. Uchta yo'nalish mavjud: tayyor banking platforma, mahalliy outsource yoki o'z jamoasi bilan yaratish.",
-    features:['iOS / Android native app','Biometric auth (Face ID, fingerprint)','Push notification (FCM/APNs)','Offline mode — limited operations','Sharia product catalog — halol mahsulotlar'],
+    purpose:{
+      uz:"Retail va korporativ mijozlar uchun mobil banking — balans, o'tkazmalar, financing ariza. Uchta yo'nalish mavjud: tayyor banking platforma, mahalliy outsource yoki o'z jamoasi bilan yaratish.",
+      ru:"Мобильный банкинг для розничных и корпоративных клиентов — баланс, переводы, заявки на финансирование. Три направления: готовая банковская платформа, местный аутсорсинг или собственная разработка.",
+      en:"Mobile banking for retail and corporate clients — balance, transfers, financing applications. Three options: ready-made banking platform, local outsourcing, or in-house development."
+    },
+    features:{
+      uz:['iOS / Android native app','Biometric auth (Face ID, fingerprint)','Push notification (FCM/APNs)','Offline mode — limited operations','Sharia product catalog — halol mahsulotlar'],
+      ru:['Нативные приложения iOS / Android','Биометрическая аутентификация (Face ID, отпечаток)','Push-уведомления (FCM/APNs)','Офлайн-режим — ограниченные операции','Каталог шариатских продуктов — халяльные продукты'],
+      en:['iOS / Android native app','Biometric auth (Face ID, fingerprint)','Push notifications (FCM/APNs)','Offline mode — limited operations','Sharia product catalog — halal products']
+    },
     connects:['API Gateway → Middleware'],
     status:'required',
     multiOption: true,
@@ -735,8 +829,16 @@ const N = {
     label:'Web Portal',sub:'Internet banking',
     x:418,y:10,w:130,h:48,cat:'channel',
     vendor:'Avanza Symmetry · Tune Consulting · Inhouse — 3 ta variant',
-    purpose:"To'liq funksional internet banking — korporativ uchun bulk payment va hisobotlar. Uchta yo'nalish: tayyor banking web platforma, mahalliy outsource yoki o'z jamoasi bilan yaratish.",
-    features:['Responsive web app (SPA)','Corporate bulk payment upload (CSV/XML)','Statement eksport — PDF, Excel, MT940','Open Banking API developer portal','Sharia contract download — MLETR format'],
+    purpose:{
+      uz:"To'liq funksional internet banking — korporativ uchun bulk payment va hisobotlar. Uchta yo'nalish: tayyor banking web platforma, mahalliy outsource yoki o'z jamoasi bilan yaratish.",
+      ru:"Полнофункциональный интернет-банкинг — для корпоративных клиентов массовые платежи и отчёты. Три направления: готовая веб-платформа, местный аутсорсинг или собственная разработка.",
+      en:"Full-featured internet banking — bulk payments and reports for corporate clients. Three options: ready-made banking web platform, local outsourcing, or in-house development."
+    },
+    features:{
+      uz:['Responsive web app (SPA)','Corporate bulk payment upload (CSV/XML)','Statement eksport — PDF, Excel, MT940','Open Banking API developer portal','Sharia contract download — MLETR format'],
+      ru:['Адаптивное веб-приложение (SPA)','Загрузка массовых корпоративных платежей (CSV/XML)','Экспорт выписки — PDF, Excel, MT940','Портал разработчика Open Banking API','Загрузка шариатских договоров — формат MLETR'],
+      en:['Responsive web app (SPA)','Corporate bulk payment upload (CSV/XML)','Statement export — PDF, Excel, MT940','Open Banking API developer portal','Sharia contract download — MLETR format']
+    },
     connects:['API Gateway → Middleware'],
     status:'required',
     multiOption: true,
@@ -746,8 +848,16 @@ const N = {
     label:'ATM/POS ch.',sub:'ISO 8583 channel',
     x:560,y:10,w:130,h:48,cat:'channel',
     vendor:'NCR · Diebold Nixdorf — 2 ta variant',
-    purpose:"ATM va POS terminallaridan keluvchi ISO 8583 tranzaksiyalar Middleware ga tunnel qilinadi. Ikkita yetakchi xalqaro vendor o'rtasida tanlash mumkin.",
-    features:['ISO 8583:2003 message format','XFS/CEN standard compliance','NDC/S7 protocol support','Contactless / NFC tap-to-pay','Terminal key management (TKM)'],
+    purpose:{
+      uz:"ATM va POS terminallaridan keluvchi ISO 8583 tranzaksiyalar Middleware ga tunnel qilinadi. Ikkita yetakchi xalqaro vendor o'rtasida tanlash mumkin.",
+      ru:"ISO 8583 транзакции от банкоматов и POS-терминалов туннелируются в Middleware. Доступны два ведущих международных вендора.",
+      en:"ISO 8583 transactions from ATMs and POS terminals are tunnelled to Middleware. Choose between two leading international vendors."
+    },
+    features:{
+      uz:['ISO 8583:2003 message format','XFS/CEN standard compliance','NDC/S7 protocol support','Contactless / NFC tap-to-pay','Terminal key management (TKM)'],
+      ru:['Формат сообщений ISO 8583:2003','Соответствие стандартам XFS/CEN','Поддержка протоколов NDC/S7','Бесконтактные / NFC платежи','Управление ключами терминала (TKM)'],
+      en:['ISO 8583:2003 message format','XFS/CEN standard compliance','NDC/S7 protocol support','Contactless / NFC tap-to-pay','Terminal key management (TKM)']
+    },
     connects:['API Gateway → Middleware → ATM/POS Mgmt'],
     status:'required',
     multiOption: true,
@@ -757,8 +867,16 @@ const N = {
     label:'Corp API',sub:'Open banking · B2B',
     x:702,y:10,w:130,h:48,cat:'channel',
     vendor:'Kong Enterprise · AWS API Gateway · Maverick — 3 ta variant',
-    purpose:"Korporativ mijozlar va fintech hamkorlar uchun Open Banking API — ERP va 1C bilan integratsiya. Uchta platforma o'rtasida tanlash mumkin.",
-    features:['REST / OpenAPI 3.0 specification','Webhook subscriptions','Sandbox environment','OAuth2 client credentials flow','Bulk payment initiation API'],
+    purpose:{
+      uz:"Korporativ mijozlar va fintech hamkorlar uchun Open Banking API — ERP va 1C bilan integratsiya. Uchta platforma o'rtasida tanlash mumkin.",
+      ru:"Open Banking API для корпоративных клиентов и финтех-партнёров — интеграция с ERP и 1С. Выбор из трёх платформ.",
+      en:"Open Banking API for corporate clients and fintech partners — ERP and 1C integration. Choose from three platforms."
+    },
+    features:{
+      uz:['REST / OpenAPI 3.0 specification','Webhook subscriptions','Sandbox environment','OAuth2 client credentials flow','Bulk payment initiation API'],
+      ru:['Спецификация REST / OpenAPI 3.0','Webhook-подписки','Sandbox-окружение','Поток OAuth2 client credentials','API инициации массовых платежей'],
+      en:['REST / OpenAPI 3.0 specification','Webhook subscriptions','Sandbox environment','OAuth2 client credentials flow','Bulk payment initiation API']
+    },
     connects:['API Gateway → Middleware'],
     status:'recommended',
     multiOption: true,
@@ -768,8 +886,16 @@ const N = {
     label:'Chat / USSD',sub:'Chatbot · SuperApp',
     x:844,y:10,w:130,h:48,cat:'channel',
     vendor:'Telegram Bot · USSD Gateway · Conversational AI — 3 ta variant',
-    purpose:"USSD va chatbot kanali — oddiy balans so'rov, mini-tranzaksiyalar, xizmat ko'rsatish. Uchta yondashuv mavjud.",
-    features:['USSD *123# gateway integration','Telegram / WhatsApp Business bot','AI NLP chatbot — Uzbek language','QR payment via chat','24/7 balance & mini-statement'],
+    purpose:{
+      uz:"USSD va chatbot kanali — oddiy balans so'rov, mini-tranzaksiyalar, xizmat ko'rsatish. Uchta yondashuv mavjud.",
+      ru:"Канал USSD и чат-бот — простые запросы баланса, мини-транзакции, обслуживание клиентов. Три подхода.",
+      en:"USSD and chatbot channel — simple balance queries, mini-transactions, customer service. Three approaches available."
+    },
+    features:{
+      uz:['USSD *123# gateway integration','Telegram / WhatsApp Business bot','AI NLP chatbot — Uzbek language','QR payment via chat','24/7 balance & mini-statement'],
+      ru:['Интеграция шлюза USSD *123#','Бот Telegram / WhatsApp Business','AI NLP чат-бот — узбекский язык','QR-оплата через чат','Баланс и мини-выписка 24/7'],
+      en:['USSD *123# gateway integration','Telegram / WhatsApp Business bot','AI NLP chatbot — Uzbek language','QR payment via chat','24/7 balance & mini-statement']
+    },
     connects:['API Gateway → Middleware'],
     status:'evaluate',
     multiOption: true,
@@ -779,8 +905,16 @@ const N = {
     label:'Core Banking ABS',sub:'iABS · NCI · B2',
     x:10,y:148,w:220,h:42,cat:'internal',
     vendor:'iABS · NCI · B2 — 3 ta variant',
-    purpose:"Islomiy bank uchun uchta ABS varianti mavjud. Har bir variant o'zining ustunligi bilan ajralib turadi: mahalliy tajriba, narx moslashuvchanligi yoki O'zbekiston bozori adaptatsiyasi.",
-    features:['iABS — Fido-Biznes mahalliy lideri, 30+ yil tajriba','NCI — arzon, to\'liq customizable ABS','B2 — chet el vendori, O\'zbekiston bozoriga moslashgan','Barcha variant Middleware (Rendezvous) bilan integratsiya','Tanlov: mahalliy tajriba, narx va moslashuvchanlikka qarab'],
+    purpose:{
+      uz:"Islomiy bank uchun uchta ABS varianti mavjud. Har bir variant o'zining ustunligi bilan ajralib turadi: mahalliy tajriba, narx moslashuvchanligi yoki O'zbekiston bozori adaptatsiyasi.",
+      ru:"Для исламского банка доступны три варианта ABS. Каждый отличается своими преимуществами: местный опыт, гибкость цен или адаптация к рынку Узбекистана.",
+      en:"Three ABS options for Islamic banking. Each has distinct strengths: local expertise, pricing flexibility, or Uzbekistan market adaptation."
+    },
+    features:{
+      uz:['iABS — Fido-Biznes mahalliy lideri, 30+ yil tajriba',"NCI — arzon, to'liq customizable ABS","B2 — chet el vendori, O'zbekiston bozoriga moslashgan","Barcha variant Middleware (Rendezvous) bilan integratsiya",'Tanlov: mahalliy tajriba, narx va moslashuvchanlikka qarab'],
+      ru:['iABS — местный лидер Fido-Biznes, 30+ лет опыта','NCI — доступный, полностью настраиваемый ABS','B2 — зарубежный вендор, адаптирован к рынку Узбекистана','Все варианты интегрированы с Middleware (Rendezvous)','Выбор по критериям: местный опыт, цена и гибкость'],
+      en:['iABS — Fido-Biznes local leader, 30+ years experience','NCI — affordable, fully customizable ABS','B2 — foreign vendor, adapted for Uzbekistan market','All options integrate with Middleware (Rendezvous)','Choose by: local expertise, price and flexibility']
+    },
     connects:['Barcha moliyaviy operatsiyalar','DWH & BI','Card Mgmt','Cash Mgmt'],
     status:'required',
     multiOption: true
@@ -789,8 +923,16 @@ const N = {
     label:'CRM',sub:'Unison Ace · Bitrix24 · Fido',
     x:10,y:198,w:220,h:42,cat:'internal',
     vendor:'Avanza Unison Ace · Bitrix24 · Fido Biznes CRM — 3 ta variant',
-    purpose:"Mijoz munosabatlari boshqaruvi: lead management, KYC workflow, Front/Back Office va 360° mijoz profili. Uchta variant mavjud — banking-native, universal va mahalliy yechim.",
-    features:['Lead funnel va sales pipeline','KYC / AML workflow automation','Complaint management — ITIL asosida','Product Factory — yangi mahsulot sozlash','360° mijoz profili — real-time'],
+    purpose:{
+      uz:"Mijoz munosabatlari boshqaruvi: lead management, KYC workflow, Front/Back Office va 360° mijoz profili. Uchta variant mavjud — banking-native, universal va mahalliy yechim.",
+      ru:"Управление клиентскими отношениями: лид-менеджмент, KYC workflow, Front/Back Office и профиль клиента 360°. Три варианта: банковский, универсальный и местное решение.",
+      en:"Customer relationship management: lead management, KYC workflow, Front/Back Office and 360° client profile. Three options: banking-native, universal, and local solution."
+    },
+    features:{
+      uz:['Lead funnel va sales pipeline','KYC / AML workflow automation','Complaint management — ITIL asosida','Product Factory — yangi mahsulot sozlash','360° mijoz profili — real-time'],
+      ru:['Воронка лидов и pipeline продаж','Автоматизация KYC / AML workflow','Управление жалобами — на основе ITIL','Product Factory — настройка новых продуктов','Профиль клиента 360° — в реальном времени'],
+      en:['Lead funnel and sales pipeline','KYC / AML workflow automation','Complaint management — ITIL-based','Product Factory — new product configuration','360° client profile — real-time']
+    },
     connects:['Core Banking','DWH & BI','AML/CFT'],
     status:'recommended',
     multiOption: true,
@@ -800,8 +942,16 @@ const N = {
     label:'DWH & BI',sub:'ClickHouse · Snowflake · BI',
     x:10,y:248,w:220,h:42,cat:'internal',
     vendor:'ClickHouse · Snowflake · Metabase · Power BI — 2 ta variant',
-    purpose:"Tarixiy ma'lumotlar ombori, Sharia KPI dashboard, CBU uchun OLAP hisobotlar va ML pipeline. On-premise yoki cloud yo'nalishda ikki xil arxitektura mavjud.",
-    features:['Real-time Sharia KPI: halol tranzaksiyalar ulushi','OLAP cube — MIS va boshqaruv hisobotlar','ML pipeline — scoring, churn prediction','CBU XBRL reporting eksport','AAOIFI compliance score — board uchun'],
+    purpose:{
+      uz:"Tarixiy ma'lumotlar ombori, Sharia KPI dashboard, CBU uchun OLAP hisobotlar va ML pipeline. On-premise yoki cloud yo'nalishda ikki xil arxitektura mavjud.",
+      ru:"Хранилище исторических данных, Sharia KPI dashboard, OLAP-отчёты для ЦБ и ML-pipeline. Две архитектуры: on-premise или облачная.",
+      en:"Historical data warehouse, Sharia KPI dashboard, OLAP reports for CBU and ML pipeline. Two architectures: on-premise or cloud."
+    },
+    features:{
+      uz:['Real-time Sharia KPI: halol tranzaksiyalar ulushi','OLAP cube — MIS va boshqaruv hisobotlar','ML pipeline — scoring, churn prediction','CBU XBRL reporting eksport','AAOIFI compliance score — board uchun'],
+      ru:['Real-time Sharia KPI: доля халяльных транзакций','OLAP-куб — MIS и управленческие отчёты','ML-pipeline — скоринг, прогнозирование оттока','Экспорт XBRL-отчётности для ЦБ','AAOIFI compliance score — для совета директоров'],
+      en:['Real-time Sharia KPI: halal transaction ratio','OLAP cube — MIS and management reports','ML pipeline — scoring, churn prediction','CBU XBRL reporting export','AAOIFI compliance score — for board']
+    },
     connects:['Kafka stream ← Middleware','Core Banking','CRM'],
     status:'required',
     multiOption: true,
@@ -811,8 +961,16 @@ const N = {
     label:'Card Mgmt',sub:'Uzcard · Humo · Visa',
     x:10,y:298,w:220,h:42,cat:'internal',
     vendor:'Avanza Vision · OpenWay WAY4 · TS2 — 3 ta variant',
-    purpose:"Barcha karta turlarini boshqarish: chiqarish, bloklash, limitlar, PIN management. Uchta yetakchi platforma o'rtasida tanlash mumkin.",
-    features:['Uzcard · Humo · VISA · Mastercard · UPI','Prepaid va virtual kartalar','EMV chip + contactless NFC','PIN management · 3D Secure','Karta holati real-time monitoring'],
+    purpose:{
+      uz:"Barcha karta turlarini boshqarish: chiqarish, bloklash, limitlar, PIN management. Uchta yetakchi platforma o'rtasida tanlash mumkin.",
+      ru:"Управление всеми типами карт: выпуск, блокировка, лимиты, PIN-менеджмент. Выбор из трёх ведущих платформ.",
+      en:"Manage all card types: issuance, blocking, limits, PIN management. Choose from three leading platforms."
+    },
+    features:{
+      uz:['Uzcard · Humo · VISA · Mastercard · UPI','Prepaid va virtual kartalar','EMV chip + contactless NFC','PIN management · 3D Secure','Karta holati real-time monitoring'],
+      ru:['Uzcard · Humo · VISA · Mastercard · UPI','Предоплаченные и виртуальные карты','EMV чип + бесконтактный NFC','PIN-менеджмент · 3D Secure','Мониторинг статуса карты в реальном времени'],
+      en:['Uzcard · Humo · VISA · Mastercard · UPI','Prepaid and virtual cards','EMV chip + contactless NFC','PIN management · 3D Secure','Card status real-time monitoring']
+    },
     connects:['Uzcard/Humo external switch','Core Banking','Cash Mgmt'],
     status:'required',
     multiOption: true,
@@ -822,8 +980,16 @@ const N = {
     label:'Cash Mgmt',sub:'Multicurrency',
     x:10,y:348,w:220,h:42,cat:'internal',
     vendor:'iMAL Cash Mgmt · IBS Group CMS — 2 ta variant',
-    purpose:"Naqd pul operatsiyalari, kassir tizimi, valyuta konvertatsiyasi, vault management. Ikki xil yondashuv: islomiy banking-specific yoki universal CMS.",
-    features:['Multi-currency: UZS, USD, EUR, RUB, CNY','Kassir operatsiyalari — teller system','Vault management — naqd pul hisobi','ATM naqd pul replenishment planner','FX kurs va treasury boshqaruvi'],
+    purpose:{
+      uz:"Naqd pul operatsiyalari, kassir tizimi, valyuta konvertatsiyasi, vault management. Ikki xil yondashuv: islomiy banking-specific yoki universal CMS.",
+      ru:"Операции с наличными, кассирская система, конвертация валют, управление хранилищем. Два подхода: специализированный исламский банкинг или универсальная CMS.",
+      en:"Cash operations, teller system, currency conversion, vault management. Two approaches: Islamic banking-specific or universal CMS."
+    },
+    features:{
+      uz:['Multi-currency: UZS, USD, EUR, RUB, CNY','Kassir operatsiyalari — teller system','Vault management — naqd pul hisobi','ATM naqd pul replenishment planner','FX kurs va treasury boshqaruvi'],
+      ru:['Мультивалютность: UZS, USD, EUR, RUB, CNY','Кассирские операции — teller system','Vault management — учёт наличных','Планировщик пополнения банкоматов','Управление FX-курсами и казначейством'],
+      en:['Multi-currency: UZS, USD, EUR, RUB, CNY','Cash operations — teller system','Vault management — cash accounting','ATM cash replenishment planner','FX rates and treasury management']
+    },
     connects:['Core Banking','ATM/POS Mgmt','Card Mgmt'],
     status:'required',
     multiOption: true,
@@ -833,8 +999,16 @@ const N = {
     label:'Billing',sub:'Prepaid · P2P',
     x:10,y:398,w:220,h:42,cat:'internal',
     vendor:'Avanza Novus · Compass Plus · Inhouse — 3 ta variant',
-    purpose:"Kommunal to'lovlar, prepaid kartalar, P2P o'tkazmalar. Banking-native switch, xalqaro platforma yoki inhouse yaratish o'rtasida tanlash mumkin.",
-    features:["Kommunal to'lovlar — Paynet, Billz","P2P o'tkazma — Uzcard P2P, Humo P2P",'Prepaid karta top-up (yuk)','QR orqali merchant payment','Recurring / auto-pay sozlash'],
+    purpose:{
+      uz:"Kommunal to'lovlar, prepaid kartalar, P2P o'tkazmalar. Banking-native switch, xalqaro platforma yoki inhouse yaratish o'rtasida tanlash mumkin.",
+      ru:"Коммунальные платежи, предоплаченные карты, P2P-переводы. Выбор: банковский switch, международная платформа или собственная разработка.",
+      en:"Utility payments, prepaid cards, P2P transfers. Choose between banking-native switch, international platform, or in-house development."
+    },
+    features:{
+      uz:["Kommunal to'lovlar — Paynet, Billz","P2P o'tkazma — Uzcard P2P, Humo P2P",'Prepaid karta top-up (yuk)','QR orqali merchant payment','Recurring / auto-pay sozlash'],
+      ru:['Коммунальные платежи — Paynet, Billz','P2P-переводы — Uzcard P2P, Humo P2P','Пополнение предоплаченной карты','Оплата мерчанту через QR','Настройка recurring / auto-pay'],
+      en:['Utility payments — Paynet, Billz','P2P transfers — Uzcard P2P, Humo P2P','Prepaid card top-up','QR merchant payment','Recurring / auto-pay setup']
+    },
     connects:['Paynet/Billz','Card Mgmt','Core Banking'],
     status:'required',
     multiOption: true,
@@ -844,8 +1018,16 @@ const N = {
     label:"Int'l Transfer",sub:'SWIFT · SEPA · RIA',
     x:10,y:448,w:220,h:42,cat:'internal',
     vendor:'SWIFT Alliance · Finastra Global PAYplus — 2 ta variant',
-    purpose:"Xalqaro pul o'tkazmalari — SWIFT, RIA, Western Union, korrespondent banklar. Ikkita yondashuv: klassik SWIFT Alliance yoki zamonaviy Finastra bulutli platforma.",
-    features:['SWIFT MT103 / MT202 / ISO 20022 MX format','RIA · Western Union · MoneyGram API','Correspondent banking management','FATCA / CRS compliance reporting','FX treasury hedging instrumentlar'],
+    purpose:{
+      uz:"Xalqaro pul o'tkazmalari — SWIFT, RIA, Western Union, korrespondent banklar. Ikkita yondashuv: klassik SWIFT Alliance yoki zamonaviy Finastra bulutli platforma.",
+      ru:"Международные денежные переводы — SWIFT, RIA, Western Union, банки-корреспонденты. Два подхода: классический SWIFT Alliance или современная облачная платформа Finastra.",
+      en:"International money transfers — SWIFT, RIA, Western Union, correspondent banks. Two approaches: classic SWIFT Alliance or modern Finastra cloud platform."
+    },
+    features:{
+      uz:['SWIFT MT103 / MT202 / ISO 20022 MX format','RIA · Western Union · MoneyGram API','Correspondent banking management','FATCA / CRS compliance reporting','FX treasury hedging instrumentlar'],
+      ru:['Форматы SWIFT MT103 / MT202 / ISO 20022 MX','API RIA · Western Union · MoneyGram','Управление банками-корреспондентами','Отчётность FATCA / CRS compliance','Инструменты FX-хеджирования казначейства'],
+      en:['SWIFT MT103 / MT202 / ISO 20022 MX format','RIA · Western Union · MoneyGram API','Correspondent banking management','FATCA / CRS compliance reporting','FX treasury hedging instruments']
+    },
     connects:["SWIFT/Remittance external node","Core Banking"],
     status:'recommended',
     multiOption: true,
@@ -855,8 +1037,16 @@ const N = {
     label:'HRMS',sub:'Avanza · Workday · Inhouse',
     x:10,y:498,w:220,h:42,cat:'internal',
     vendor:"Avanza HRMS · Workday HCM · Inhouse — 3 ta variant",
-    purpose:"Xodimlar resurslarini boshqarish tizimi — ish haqi, KPI, ta'til, onboarding, mehnat shartnomasi. Bank-spesifik bonus moduli bilan to'ldirilgan. Uchta yo'nalish: banking-native vendor, global lider yoki inhouse qurilgan tizim.",
-    features:['Xodim profili va tashkiliy tuzilma','Ish haqi hisoblash — soliq va chegirmalar bilan','KPI va samaradorlik baholash moduli',"Ta'til, yo'qlik, ish vaqti hisobi",'Onboarding / Offboarding workflow','Mehnat shartnomasi va hujjat boshqaruvi','Core Banking ABS bilan API integratsiya','Front office bonus moduli — avtomatik hisoblash'],
+    purpose:{
+      uz:"Xodimlar resurslarini boshqarish tizimi — ish haqi, KPI, ta'til, onboarding, mehnat shartnomasi. Bank-spesifik bonus moduli bilan to'ldirilgan. Uchta yo'nalish: banking-native vendor, global lider yoki inhouse qurilgan tizim.",
+      ru:"Система управления персоналом — зарплата, KPI, отпуска, онбординг, трудовой договор. Дополнена банковским модулем бонусов. Три направления: банковский вендор, глобальный лидер или собственная разработка.",
+      en:"Human resource management system — payroll, KPI, leave, onboarding, employment contract. Supplemented with a bank-specific bonus module. Three options: banking-native vendor, global leader, or in-house system."
+    },
+    features:{
+      uz:['Xodim profili va tashkiliy tuzilma','Ish haqi hisoblash — soliq va chegirmalar bilan','KPI va samaradorlik baholash moduli',"Ta'til, yo'qlik, ish vaqti hisobi",'Onboarding / Offboarding workflow','Mehnat shartnomasi va hujjat boshqaruvi','Core Banking ABS bilan API integratsiya','Front office bonus moduli — avtomatik hisoblash'],
+      ru:['Профиль сотрудника и оргструктура','Расчёт зарплаты — с налогами и вычетами','Модуль KPI и оценки эффективности','Учёт отпусков, отсутствий и рабочего времени','Workflow онбординга / оффбординга','Управление трудовыми договорами и документами','API-интеграция с Core Banking ABS','Модуль бонусов фронт-офиса — автоматический расчёт'],
+      en:['Employee profile and org structure','Payroll calculation — with taxes and deductions','KPI and performance evaluation module','Leave, absence and work-time accounting','Onboarding / Offboarding workflow','Employment contract and document management','API integration with Core Banking ABS','Front office bonus module — automated calculation']
+    },
     connects:['Core Banking ABS','DWH & BI'],
     status:'recommended',
     multiOption: true,
@@ -866,8 +1056,16 @@ const N = {
     label:'Uzcard / Humo',sub:'National switch',
     x:1020,y:188,w:158,h:42,cat:'external',
     vendor:'Uzcard JSC · Humo Processing Center',
-    purpose:"O'zbekiston milliy to'lov tizimlari — barcha mahalliy karta tranzaksiyalari.",
-    features:["Uzcard national switch",'Humo processing center','Real-time authorization','Dispute management — chargeback','Settlement T+0'],
+    purpose:{
+      uz:"O'zbekiston milliy to'lov tizimlari — barcha mahalliy karta tranzaksiyalari.",
+      ru:"Национальные платёжные системы Узбекистана — все местные карточные транзакции.",
+      en:"Uzbekistan national payment systems — all domestic card transactions."
+    },
+    features:{
+      uz:["Uzcard national switch",'Humo processing center','Real-time authorization','Dispute management — chargeback','Settlement T+0'],
+      ru:['Национальный свитч Uzcard','Процессинговый центр Humo','Авторизация в реальном времени','Управление спорами — chargeback','Расчёт T+0'],
+      en:['Uzcard national switch','Humo processing center','Real-time authorization','Dispute management — chargeback','Settlement T+0']
+    },
     connects:['Card Mgmt ← Middleware'],
     status:'required'
   },
@@ -875,8 +1073,16 @@ const N = {
     label:'SWIFT / Remit.',sub:'MT103 · RIA · WU',
     x:1020,y:238,w:158,h:42,cat:'external',
     vendor:'SWIFT Alliance · RIA Money Transfer · Western Union',
-    purpose:"Xalqaro pul o'tkazmalari uchun tashqi operator va korrespondent bank tarmog'i.",
-    features:['SWIFT BIC / correspondent network','RIA Money Transfer API','Western Union GPBN','ISO 20022 MX format ready','Sanctions screening integration'],
+    purpose:{
+      uz:"Xalqaro pul o'tkazmalari uchun tashqi operator va korrespondent bank tarmog'i.",
+      ru:"Внешний оператор и сеть банков-корреспондентов для международных денежных переводов.",
+      en:"External operator and correspondent bank network for international money transfers."
+    },
+    features:{
+      uz:['SWIFT BIC / correspondent network','RIA Money Transfer API','Western Union GPBN','ISO 20022 MX format ready','Sanctions screening integration'],
+      ru:['SWIFT BIC / сеть корреспондентов','API RIA Money Transfer','Western Union GPBN','Готовность к формату ISO 20022 MX','Интеграция проверки санкций'],
+      en:['SWIFT BIC / correspondent network','RIA Money Transfer API','Western Union GPBN','ISO 20022 MX format ready','Sanctions screening integration']
+    },
     connects:["Int'l Transfer ← Middleware"],
     status:'required'
   },
@@ -884,8 +1090,16 @@ const N = {
     label:'CBU Regulator',sub:'Law 1126 · XBRL',
     x:1020,y:288,w:158,h:42,cat:'external',
     vendor:"O'zbekiston Markaziy Banki — CBU",
-    purpose:"CBU ga majburiy regulyator hisobotlar, islomiy bank bo'yicha nazorat.",
-    features:['CERBER — CBU reporting tizimi','XBRL moliyaviy hisobotlar','Law 1126 islomiy bank talablari','Basel III kapital adequacy nazorat','Real-time sandal / operatsiya monitoring'],
+    purpose:{
+      uz:"CBU ga majburiy regulyator hisobotlar, islomiy bank bo'yicha nazorat.",
+      ru:"Обязательная регуляторная отчётность в ЦБ, надзор за исламским банкингом.",
+      en:"Mandatory regulatory reporting to CBU, Islamic banking supervision."
+    },
+    features:{
+      uz:['CERBER — CBU reporting tizimi','XBRL moliyaviy hisobotlar','Law 1126 islomiy bank talablari','Basel III kapital adequacy nazorat','Real-time sandal / operatsiya monitoring'],
+      ru:['CERBER — система отчётности ЦБ','Финансовая отчётность XBRL','Требования Закона 1126 об исламском банкинге','Надзор за достаточностью капитала Базель III','Мониторинг операций / транзакций в реальном времени'],
+      en:['CERBER — CBU reporting system','XBRL financial reports','Law 1126 Islamic banking requirements','Basel III capital adequacy monitoring','Real-time transaction / operation monitoring']
+    },
     connects:['Core Banking','DWH & BI ← Middleware'],
     status:'required'
   },
@@ -893,17 +1107,33 @@ const N = {
     label:'Paynet / Billz',sub:'Bill payment',
     x:1020,y:338,w:158,h:42,cat:'external',
     vendor:"Paynet O'zbekiston · Billz Processing Center",
-    purpose:"O'zbekistondagi kommunal to'lovlar aggregatori.",
-    features:["200+ provayder (O'zbekiston)",'Real-time payment confirmation','Receipt / chek generation','Reverse payment support','REST API + SOAP fallback'],
+    purpose:{
+      uz:"O'zbekistondagi kommunal to'lovlar aggregatori.",
+      ru:"Агрегатор коммунальных платежей в Узбекистане.",
+      en:"Utility payment aggregator in Uzbekistan."
+    },
+    features:{
+      uz:["200+ provayder (O'zbekiston)",'Real-time payment confirmation','Receipt / chek generation','Reverse payment support','REST API + SOAP fallback'],
+      ru:['200+ провайдеров (Узбекистан)','Подтверждение платежа в реальном времени','Формирование квитанций / чеков','Поддержка возвратных платежей','REST API + SOAP fallback'],
+      en:['200+ providers (Uzbekistan)','Real-time payment confirmation','Receipt / check generation','Reverse payment support','REST API + SOAP fallback']
+    },
     connects:['Billing ← Middleware'],
     status:'required'
   },
   didox:{
     label:'Didox / Soliq.uz',sub:'E-invoice · Tax',
     x:1020,y:388,w:158,h:42,cat:'external',
-    vendor:'Didox (e-invoice) · Davlat soliq qo\'mitasi API',
-    purpose:"Elektron hisob-faktura va soliq organlari integratsiyasi — Murabaha uchun majburiy.",
-    features:['E-invoice (Didox) — Murabaha tranzaksiyalari uchun','Soliq.uz API — soliq hisobotlari','E-imzo integratsiya — PKCS#7','VAT hisob-kitob (Murabaha)','Audit trail — soliq inspeksiyasi'],
+    vendor:"Didox (e-invoice) · Davlat soliq qo'mitasi API",
+    purpose:{
+      uz:"Elektron hisob-faktura va soliq organlari integratsiyasi — Murabaha uchun majburiy.",
+      ru:"Электронный счёт-фактура и интеграция с налоговыми органами — обязательно для Мурабаха.",
+      en:"Electronic invoice and tax authority integration — mandatory for Murabaha."
+    },
+    features:{
+      uz:['E-invoice (Didox) — Murabaha tranzaksiyalari uchun','Soliq.uz API — soliq hisobotlari','E-imzo integratsiya — PKCS#7','VAT hisob-kitob (Murabaha)','Audit trail — soliq inspeksiyasi'],
+      ru:['E-invoice (Didox) — для транзакций Мурабаха','API Soliq.uz — налоговая отчётность','Интеграция E-imzo — PKCS#7','Расчёт НДС (Мурабаха)','Audit trail — налоговая инспекция'],
+      en:['E-invoice (Didox) — for Murabaha transactions','Soliq.uz API — tax reporting','E-imzo integration — PKCS#7','VAT calculation (Murabaha)','Audit trail — tax inspection']
+    },
     connects:['Core Banking','Billing ← Middleware'],
     status:'required'
   },
@@ -911,8 +1141,16 @@ const N = {
     label:'TIFC / E-imzo',sub:'0% VAT · E-sign',
     x:1020,y:438,w:158,h:42,cat:'external',
     vendor:'TIFC (Toshkent xalqaro moliya markazi) · UZINFOCOM E-imzo',
-    purpose:"TIFC rezidentligi — 0% QQS imtiyozi va elektron shartnomalar uchun E-imzo.",
-    features:['Decree 48 — TIFC rezidentligi imtiyozlari','0% QQS (VAT) — barcha muomala uchun','E-imzo — PKCS#7 elektron imzo standarti','MLETR digital title flow integration','Didox bilan birgalikda shartnoma rasmiylashtiruvi'],
+    purpose:{
+      uz:"TIFC rezidentligi — 0% QQS imtiyozi va elektron shartnomalar uchun E-imzo.",
+      ru:"Резидентство TIFC — льгота 0% НДС и E-imzo для электронных договоров.",
+      en:"TIFC residency — 0% VAT benefit and E-imzo for electronic contracts."
+    },
+    features:{
+      uz:['Decree 48 — TIFC rezidentligi imtiyozlari','0% QQS (VAT) — barcha muomala uchun','E-imzo — PKCS#7 elektron imzo standarti','MLETR digital title flow integration','Didox bilan birgalikda shartnoma rasmiylashtiruvi'],
+      ru:['Декрет 48 — льготы резидентства TIFC','0% НДС (VAT) — для всех операций','E-imzo — стандарт электронной подписи PKCS#7','Интеграция MLETR digital title flow','Оформление договоров совместно с Didox'],
+      en:['Decree 48 — TIFC residency benefits','0% VAT — for all transactions','E-imzo — PKCS#7 electronic signature standard','MLETR digital title flow integration','Contract execution jointly with Didox']
+    },
     connects:['Core Banking','Didox ← Middleware'],
     status:'required'
   },
@@ -920,8 +1158,16 @@ const N = {
     label:'AML / CFT',sub:'FATF · Sanctions',
     x:262,y:564,w:158,h:44,cat:'compliance',
     vendor:'NICE Actimize · Oracle FCCM — 2 ta variant',
-    purpose:"Real-time pul yuvish va terrorizmni moliyalashtirish nazorati — har bir tranzaksiya bajarilishida tekshiriladi. Ikkita yetakchi vendor o'rtasida tanlash mumkin.",
-    features:['FATF 40 tavsiya asosida ishlaydi','UN / OFAC / EU sanctions screening','PEP (Politically Exposed Persons) check','SAR — Suspicious Activity Report','Real-time transaction risk scoring'],
+    purpose:{
+      uz:"Real-time pul yuvish va terrorizmni moliyalashtirish nazorati — har bir tranzaksiya bajarilishida tekshiriladi. Ikkita yetakchi vendor o'rtasida tanlash mumkin.",
+      ru:"Контроль отмывания денег и финансирования терроризма в реальном времени — проверка при каждой транзакции. Выбор из двух ведущих вендоров.",
+      en:"Real-time AML/CFT monitoring — checked on every transaction. Choose between two leading vendors."
+    },
+    features:{
+      uz:['FATF 40 tavsiya asosida ishlaydi','UN / OFAC / EU sanctions screening','PEP (Politically Exposed Persons) check','SAR — Suspicious Activity Report','Real-time transaction risk scoring'],
+      ru:['Работает на основе 40 рекомендаций FATF','Проверка по санкционным спискам ООН / OFAC / ЕС','Проверка ПЭЛ (политически значимых лиц)','SAR — отчёт о подозрительной деятельности','Оценка риска транзакции в реальном времени'],
+      en:['Based on FATF 40 recommendations','UN / OFAC / EU sanctions screening','PEP (Politically Exposed Persons) check','SAR — Suspicious Activity Report','Real-time transaction risk scoring']
+    },
     connects:['Barcha tranzaksiyalar ← Middleware'],
     status:'required',
     multiOption: true,
@@ -931,8 +1177,16 @@ const N = {
     label:'Sharia Core',sub:'Real-time · Inline',
     x:444,y:564,w:158,h:44,cat:'compliance',
     vendor:'iMAL Engine · RetainX · Inhouse Rules — 3 ta variant',
-    purpose:"Har bir financing tranzaksiyasi bajarilishidan OLDIN Sharia qoidasiga muvofiqligini tekshiradi — proactive, reactive emas. Uchta variant mavjud.",
-    features:['Inline interceptor — pre-execution check','AAOIFI rules engine (55+ standart)','Asset possession validation','Sharia audit ledger — immutable log','Murabaha / Tawarruk / Ijara validator'],
+    purpose:{
+      uz:"Har bir financing tranzaksiyasi bajarilishidan OLDIN Sharia qoidasiga muvofiqligini tekshiradi — proactive, reactive emas. Uchta variant mavjud.",
+      ru:"Проверяет соответствие шариату ДО выполнения каждой финансовой транзакции — проактивно, не реактивно. Три варианта.",
+      en:"Checks Sharia compliance BEFORE each financing transaction executes — proactive, not reactive. Three options available."
+    },
+    features:{
+      uz:['Inline interceptor — pre-execution check','AAOIFI rules engine (55+ standart)','Asset possession validation','Sharia audit ledger — immutable log','Murabaha / Tawarruk / Ijara validator'],
+      ru:['Inline interceptor — предварительная проверка','Движок правил AAOIFI (55+ стандартов)','Валидация владения активами','Шариатский аудит-журнал — неизменяемый лог','Валидатор Мурабаха / Таваррук / Иджара'],
+      en:['Inline interceptor — pre-execution check','AAOIFI rules engine (55+ standards)','Asset possession validation','Sharia audit ledger — immutable log','Murabaha / Tawarruk / Ijara validator']
+    },
     connects:['Financing tranzaksiyalari ← Middleware'],
     status:'required',
     multiOption: true,
@@ -942,8 +1196,16 @@ const N = {
     label:'ATM/POS Mgmt',sub:'Health · Monitor',
     x:626,y:564,w:158,h:44,cat:'compliance',
     vendor:'Avanza Vision · NCR Activate — 2 ta variant',
-    purpose:"ATM va POS terminallarining real-time holat monitoringi, naqd pul rejimi boshqaruvi. Ikkita platforma o'rtasida tanlash mumkin.",
-    features:['Terminal health check — uptime, fault alert','Cash replenishment optimization','Remote key loading (RKL)','Fraud pattern detection at terminal','SLA reporting per terminal'],
+    purpose:{
+      uz:"ATM va POS terminallarining real-time holat monitoringi, naqd pul rejimi boshqaruvi. Ikkita platforma o'rtasida tanlash mumkin.",
+      ru:"Мониторинг состояния банкоматов и POS-терминалов в реальном времени, управление режимом наличных. Выбор из двух платформ.",
+      en:"Real-time ATM and POS terminal health monitoring, cash mode management. Choose from two platforms."
+    },
+    features:{
+      uz:['Terminal health check — uptime, fault alert','Cash replenishment optimization','Remote key loading (RKL)','Fraud pattern detection at terminal','SLA reporting per terminal'],
+      ru:['Проверка работоспособности терминала — uptime, оповещение о сбоях','Оптимизация пополнения наличных','Дистанционная загрузка ключей (RKL)','Обнаружение мошеннических паттернов на терминале','Отчётность SLA по каждому терминалу'],
+      en:['Terminal health check — uptime, fault alert','Cash replenishment optimization','Remote key loading (RKL)','Fraud pattern detection at terminal','SLA reporting per terminal']
+    },
     connects:['ATM/POS channel','Cash Mgmt ← Middleware'],
     status:'required',
     multiOption: true,
@@ -953,8 +1215,16 @@ const N = {
     label:'Incident ITIL',sub:'SLA · Alerting',
     x:808,y:564,w:158,h:44,cat:'compliance',
     vendor:'Jira Service Mgmt · ServiceNow · Freshservice — 3 ta variant',
-    purpose:"IT incident boshqaruvi, SLA nazorat, real-time alerting — ITIL v4 metodologiyasi asosida. Uchta yondashuv: developer-centric, enterprise yoki arzon bulut.",
-    features:['Jira SM — ticket management ITIL v4','PagerDuty — on-call escalation','Grafana — infrastructure monitoring','SLA breach auto-escalation','Post-incident review (PIR) workflow'],
+    purpose:{
+      uz:"IT incident boshqaruvi, SLA nazorat, real-time alerting — ITIL v4 metodologiyasi asosida. Uchta yondashuv: developer-centric, enterprise yoki arzon bulut.",
+      ru:"Управление IT-инцидентами, контроль SLA, оповещения в реальном времени — на основе методологии ITIL v4. Три подхода: для разработчиков, enterprise или бюджетное облако.",
+      en:"IT incident management, SLA monitoring, real-time alerting — based on ITIL v4 methodology. Three approaches: developer-centric, enterprise, or affordable cloud."
+    },
+    features:{
+      uz:['Jira SM — ticket management ITIL v4','PagerDuty — on-call escalation','Grafana — infrastructure monitoring','SLA breach auto-escalation','Post-incident review (PIR) workflow'],
+      ru:['Jira SM — управление тикетами ITIL v4','PagerDuty — эскалация on-call','Grafana — мониторинг инфраструктуры','Автоэскалация при нарушении SLA','Workflow постинцидентного анализа (PIR)'],
+      en:['Jira SM — ticket management ITIL v4','PagerDuty — on-call escalation','Grafana — infrastructure monitoring','SLA breach auto-escalation','Post-incident review (PIR) workflow']
+    },
     connects:['System events, alerts ← Middleware'],
     status:'recommended',
     multiOption: true,
@@ -975,18 +1245,18 @@ const COLORS = {
 };
 
 const CAT_META = {
-  hub:        {label:'Middleware Hub', color:'#9D98E8', brCol:'rgba(108,99,212,.4)',  bgCol:'rgba(108,99,212,.08)'},
-  channel:    {label:'Mijoz kanali',   color:'#6BA8E0', brCol:'rgba(46,120,199,.4)', bgCol:'rgba(46,120,199,.08)'},
-  internal:   {label:'Ichki tizim',    color:'#4DB893', brCol:'rgba(22,132,94,.4)',  bgCol:'rgba(22,132,94,.08)'},
-  external:   {label:'Tashqi tizim',   color:'#D4944A', brCol:'rgba(158,98,16,.4)', bgCol:'rgba(158,98,16,.08)'},
-  compliance: {label:'Compliance',     color:'#D06060', brCol:'rgba(139,32,32,.4)', bgCol:'rgba(139,32,32,.08)'},
-  gateway:    {label:'API Gateway',    color:'#6BA8E0', brCol:'rgba(46,120,199,.4)', bgCol:'rgba(46,120,199,.08)'}
+  hub:        {get label(){return T[L].catHub},        color:'#9D98E8', brCol:'rgba(108,99,212,.4)',  bgCol:'rgba(108,99,212,.08)'},
+  channel:    {get label(){return T[L].catChannel},    color:'#6BA8E0', brCol:'rgba(46,120,199,.4)', bgCol:'rgba(46,120,199,.08)'},
+  internal:   {get label(){return T[L].catInternal},   color:'#4DB893', brCol:'rgba(22,132,94,.4)',  bgCol:'rgba(22,132,94,.08)'},
+  external:   {get label(){return T[L].catExternal},   color:'#D4944A', brCol:'rgba(158,98,16,.4)', bgCol:'rgba(158,98,16,.08)'},
+  compliance: {get label(){return T[L].catCompliance}, color:'#D06060', brCol:'rgba(139,32,32,.4)', bgCol:'rgba(139,32,32,.08)'},
+  gateway:    {get label(){return T[L].catGateway},    color:'#6BA8E0', brCol:'rgba(46,120,199,.4)', bgCol:'rgba(46,120,199,.08)'}
 };
 
 const STATUS_META = {
-  required:    {label:"Majburiy",        cls:"required",    color:'#8B2020', light:'#D06060', bg:'rgba(139,32,32,.12)'},
-  recommended: {label:"Tavsiya etiladi", cls:"recommended", color:'#16845E', light:'#4DB893', bg:'rgba(22,132,94,.12)'},
-  evaluate:    {label:"Ko'rib chiqiladi",cls:"evaluate",     color:'#9E6210', light:'#D4944A', bg:'rgba(158,98,16,.12)'}
+  required:    {get label(){return T[L].statusRequired},    cls:"required",    color:'#8B2020', light:'#D06060', bg:'rgba(139,32,32,.12)'},
+  recommended: {get label(){return T[L].statusRecommended}, cls:"recommended", color:'#16845E', light:'#4DB893', bg:'rgba(22,132,94,.12)'},
+  evaluate:    {get label(){return T[L].statusEvaluate},    cls:"evaluate",    color:'#9E6210', light:'#D4944A', bg:'rgba(158,98,16,.12)'}
 };
 
 /* ════════════════════════════════════════════════════════════
@@ -1166,12 +1436,12 @@ function buildAnnotations() {
 ════════════════════════════════════════════════════════════ */
 function buildLegend() {
   const items = [
-    {label:'Kanallar',       color:'#2E78C7'},
-    {label:'API Gateway',    color:'#2E78C7'},
-    {label:'Ichki tizimlar', color:'#16845E'},
-    {label:'Tashqi tizimlar',color:'#9E6210'},
-    {label:'Compliance',     color:'#8B2020'},
-    {label:'Middleware',     color:'#6C63D4'},
+    {label:T[L].legChannels,    color:'#2E78C7'},
+    {label:T[L].legGateway,     color:'#2E78C7'},
+    {label:T[L].legInternal,    color:'#16845E'},
+    {label:T[L].legExternal,    color:'#9E6210'},
+    {label:T[L].legCompliance,  color:'#8B2020'},
+    {label:T[L].legMiddleware,  color:'#6C63D4'},
   ];
   const leg = document.getElementById('legend');
   leg.innerHTML = items.map(it =>
@@ -1205,33 +1475,81 @@ const MW_OPTIONS = {
     name:'Rendezvous',
     fullName:'Avanza Rendezvous — Enterprise Financial Middleware',
     badge:{text:'BANKING-NATIVE', color:'#6C63D4', bg:'rgba(108,99,212,.12)'},
-    when:"Banking-specific middleware kerak bo'lganda, ISO 8583 va SAF/STIP muhim bo'lganda, bitta Avanza suite ichida (Novus, Vision, Unison bilan) ishlashni xohlasangiz.",
+    when:{
+      uz:"Banking-specific middleware kerak bo'lganda, ISO 8583 va SAF/STIP muhim bo'lganda, bitta Avanza suite ichida (Novus, Vision, Unison bilan) ishlashni xohlasangiz.",
+      ru:"Когда нужен банковский middleware, важны ISO 8583 и SAF/STIP, и вы хотите работать в едином стеке Avanza (с Novus, Vision, Unison).",
+      en:"When banking-specific middleware is needed, ISO 8583 and SAF/STIP are important, and you want to work within the single Avanza suite (with Novus, Vision, Unison)."
+    },
     vendor:'Avanza Solutions — Dubai / Karachi (2000 yildan) · 100+ bank · KICB Kyrgyzistan, Noor Bank Dubai referensi',
-    features:['ISO 8583 native — ATM/POS switch bilan birga',"SAF/STIP: Core offline bo'lganda ham ishlaydi",'PCI DSS + PADSS + EMV to\'liq sertifikatlangan','BPM / Saga pattern — distributed transactions','Kafka / MQ event bus — guaranteed delivery','Avanza suite (Vision, Novus, Unison) bilan bundle','On-premise va cloud deployment'],
-    pros:['Banking-specific, tayyor integratsiyalar','PCI DSS sertifikat — Middleware darajasida','Avanza suite bilan bitta vendor yechimi','KICB Kyrgyzistan — Markaziy Osiyo referensi'],
-    cons:["Faqat banking — boshqa sohalar uchun moslashmaydi",'Customizability cheklangan'],
+    features:{
+      uz:['ISO 8583 native — ATM/POS switch bilan birga',"SAF/STIP: Core offline bo'lganda ham ishlaydi","PCI DSS + PADSS + EMV to'liq sertifikatlangan",'BPM / Saga pattern — distributed transactions','Kafka / MQ event bus — guaranteed delivery','Avanza suite (Vision, Novus, Unison) bilan bundle','On-premise va cloud deployment'],
+      ru:['ISO 8583 native — совместно с ATM/POS switch','SAF/STIP: работает даже при недоступности Core','Полная сертификация PCI DSS + PADSS + EMV','BPM / Saga pattern — распределённые транзакции','Kafka / MQ event bus — гарантированная доставка','Bundle с Avanza suite (Vision, Novus, Unison)','On-premise и облачное развёртывание'],
+      en:['ISO 8583 native — together with ATM/POS switch','SAF/STIP: works even when Core is offline','Full PCI DSS + PADSS + EMV certification','BPM / Saga pattern — distributed transactions','Kafka / MQ event bus — guaranteed delivery','Bundled with Avanza suite (Vision, Novus, Unison)','On-premise and cloud deployment']
+    },
+    pros:{
+      uz:['Banking-specific, tayyor integratsiyalar','PCI DSS sertifikat — Middleware darajasida','Avanza suite bilan bitta vendor yechimi','KICB Kyrgyzistan — Markaziy Osiyo referensi'],
+      ru:['Банковская специализация, готовые интеграции','Сертификат PCI DSS на уровне Middleware','Единое вендорное решение с Avanza suite','KICB Кыргызстан — референс в Центральной Азии'],
+      en:['Banking-specific, ready integrations','PCI DSS certificate at Middleware level','Single-vendor solution with Avanza suite','KICB Kyrgyzstan — Central Asia reference']
+    },
+    cons:{
+      uz:["Faqat banking — boshqa sohalar uchun moslashmaydi",'Customizability cheklangan'],
+      ru:['Только банкинг — не подходит для других отраслей','Ограниченная кастомизация'],
+      en:['Banking-only — not suitable for other industries','Limited customizability']
+    },
     status:'recommended'
   },
   velmie:{
     name:'Velmie',
     fullName:'Velmie — Digital Banking & FinTech Middleware Platform',
     badge:{text:'FINTECH-READY', color:'#2E78C7', bg:'rgba(46,120,199,.12)'},
-    when:"Neobank va digital-first yondashuv uchun, microservices arxitekturasi kerak bo'lganda, tez deployment va SaaS modeli afzal bo'lganda.",
+    when:{
+      uz:"Neobank va digital-first yondashuv uchun, microservices arxitekturasi kerak bo'lganda, tez deployment va SaaS modeli afzal bo'lganda.",
+      ru:"Для необанка и подхода digital-first, когда нужна микросервисная архитектура, предпочтительны быстрое развёртывание и SaaS-модель.",
+      en:"For neobank and digital-first approach, when microservices architecture is needed and fast deployment with SaaS model is preferred."
+    },
     vendor:'Velmie — Tallinn, Estonia · Fintech va neobank ixtisoslashuv',
-    features:['Microservices arxitekturasi — cloud-native','Open banking API (PSD2-inspired) out-of-the-box','Real-time processing — millisekund latency','White-label digital banking suite','Modular deployment — kerakli komponentlar alohida','Neobank va challenger bank uchun optimallashtirilgan','Tez onboarding — 3-4 oy'],
-    pros:['Cloud-native, microservices — zamonaviy arxitektura','Neobank uchun ideal','Tez deployment'],
-    cons:["ISO 8583 / ATM uchun qo'shimcha konfiguratsiya",'Banking-specific sertifikatlari kamroq','O\'zbekiston referensi yo\'q'],
+    features:{
+      uz:['Microservices arxitekturasi — cloud-native','Open banking API (PSD2-inspired) out-of-the-box','Real-time processing — millisekund latency','White-label digital banking suite','Modular deployment — kerakli komponentlar alohida','Neobank va challenger bank uchun optimallashtirilgan','Tez onboarding — 3-4 oy'],
+      ru:['Микросервисная архитектура — cloud-native','Open Banking API (по мотивам PSD2) из коробки','Обработка в реальном времени — миллисекундная задержка','White-label digital banking suite','Модульное развёртывание — только нужные компоненты','Оптимизирован для необанков и challenger bank','Быстрый онбординг — 3-4 месяца'],
+      en:['Microservices architecture — cloud-native','Open Banking API (PSD2-inspired) out-of-the-box','Real-time processing — millisecond latency','White-label digital banking suite','Modular deployment — only required components','Optimized for neobanks and challenger banks','Fast onboarding — 3-4 months']
+    },
+    pros:{
+      uz:['Cloud-native, microservices — zamonaviy arxitektura','Neobank uchun ideal','Tez deployment'],
+      ru:['Cloud-native, микросервисы — современная архитектура','Идеально для необанка','Быстрое развёртывание'],
+      en:['Cloud-native, microservices — modern architecture','Ideal for neobanks','Fast deployment']
+    },
+    cons:{
+      uz:["ISO 8583 / ATM uchun qo'shimcha konfiguratsiya",'Banking-specific sertifikatlari kamroq',"O'zbekiston referensi yo'q"],
+      ru:['Дополнительная настройка для ISO 8583 / ATM','Меньше банковских сертификатов','Нет референсов в Узбекистане'],
+      en:['Additional configuration for ISO 8583 / ATM','Fewer banking-specific certifications','No Uzbekistan reference']
+    },
     status:'evaluate'
   },
   kinective:{
     name:'Kinective',
     fullName:'Kinective — Banking Integration & Middleware Platform',
     badge:{text:'INTEGRATION-FOCUS', color:'#9E6210', bg:'rgba(158,98,16,.12)'},
-    when:"Legacy core banking bilan integratsiya og'ir bo'lganda, ko'p sonli external tizimlarni birlashtirish kerak bo'lganda, enterprise-grade orchestration zarur bo'lganda.",
+    when:{
+      uz:"Legacy core banking bilan integratsiya og'ir bo'lganda, ko'p sonli external tizimlarni birlashtirish kerak bo'lganda, enterprise-grade orchestration zarur bo'lganda.",
+      ru:"Когда интеграция с устаревшим core banking сложна, нужно объединить множество внешних систем и необходима оркестрация enterprise-уровня.",
+      en:"When legacy core banking integration is complex, many external systems need to be unified, and enterprise-grade orchestration is required."
+    },
     vendor:'Kinective (avval: CFM — CFI Group) — USA · Bank va kredit uyushmalari uchun',
-    features:['300+ tayyor banking connector va adaptor','Legacy tizimlar bilan deep integration','Enterprise BPM va workflow orchestration','Real-time data transformation engine','Multi-protocol support: REST, SOAP, ISO 20022, SWIFT','High-availability clustering built-in','Compliance audit trail — real-time'],
-    pros:['Eng ko\'p tayyor banking connector','Legacy integratsiya — eng kuchli','Enterprise-grade orchestration'],
-    cons:["Narxi yuqori (enterprise licensing)",'O\'rta Osiyo da referensi cheklangan','Deployment 6-9 oy'],
+    features:{
+      uz:['300+ tayyor banking connector va adaptor','Legacy tizimlar bilan deep integration','Enterprise BPM va workflow orchestration','Real-time data transformation engine','Multi-protocol support: REST, SOAP, ISO 20022, SWIFT','High-availability clustering built-in','Compliance audit trail — real-time'],
+      ru:['300+ готовых банковских коннекторов и адаптеров','Глубокая интеграция с устаревшими системами','Enterprise BPM и оркестрация workflow','Движок трансформации данных в реальном времени','Поддержка протоколов: REST, SOAP, ISO 20022, SWIFT','Встроенная high-availability кластеризация','Аудит-trail compliance — в реальном времени'],
+      en:['300+ ready banking connectors and adapters','Deep integration with legacy systems','Enterprise BPM and workflow orchestration','Real-time data transformation engine','Multi-protocol: REST, SOAP, ISO 20022, SWIFT','High-availability clustering built-in','Compliance audit trail — real-time']
+    },
+    pros:{
+      uz:["Eng ko'p tayyor banking connector",'Legacy integratsiya — eng kuchli','Enterprise-grade orchestration'],
+      ru:['Наибольшее количество готовых банковских коннекторов','Лучшая интеграция с legacy системами','Enterprise-уровень оркестрации'],
+      en:['Most ready-made banking connectors','Best legacy integration','Enterprise-grade orchestration']
+    },
+    cons:{
+      uz:["Narxi yuqori (enterprise licensing)",'O\'rta Osiyo da referensi cheklangan','Deployment 6-9 oy'],
+      ru:['Высокая стоимость (enterprise лицензирование)','Ограниченные референсы в Центральной Азии','Развёртывание 6-9 месяцев'],
+      en:['High cost (enterprise licensing)','Limited Central Asia references','Deployment 6-9 months']
+    },
     status:'evaluate'
   }
 };
@@ -1411,23 +1729,23 @@ function renderCrmPanel(optKey) {
       ${opt.badge.text}
     </span>
     <div class="when-box">
-      <div class="when-label">Qachon tanlash kerak</div>
-      <div class="when-val">${opt.when}</div>
+      <div class="when-label">${T[L].panelWhen}</div>
+      <div class="when-val">${t(opt.when)}</div>
     </div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
-    </div>
-    <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
-      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
-    </div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
-      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
+      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
+      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
+      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
     </div>
   `;
@@ -1539,23 +1857,23 @@ function renderMobilePanel(optKey) {
       ${opt.badge.text}
     </span>
     <div class="when-box">
-      <div class="when-label">Qachon tanlash kerak</div>
-      <div class="when-val">${opt.when}</div>
+      <div class="when-label">${T[L].panelWhen}</div>
+      <div class="when-val">${t(opt.when)}</div>
     </div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
-    </div>
-    <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
-      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
-    </div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
-      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
+      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
+      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
+      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
     </div>
   `;
@@ -1668,23 +1986,23 @@ function renderWebPanel(optKey) {
       ${opt.badge.text}
     </span>
     <div class="when-box">
-      <div class="when-label">Qachon tanlash kerak</div>
-      <div class="when-val">${opt.when}</div>
+      <div class="when-label">${T[L].panelWhen}</div>
+      <div class="when-val">${t(opt.when)}</div>
     </div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
-    </div>
-    <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
-      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
-    </div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
-      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
+      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
+      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
+      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
         ${opt.demoUrl ? `<button class="demo-btn" onclick="window.open('${opt.demoUrl}','_blank')"><svg viewBox="0 0 20 20"><polygon points="6,3 18,10 6,17"/></svg>DEMO</button>` : ''}
@@ -1816,24 +2134,24 @@ function renderHrmsPanel(optKey) {
       ${opt.badge.text}
     </span>
     <div class="when-box">
-      <div class="when-label">Qachon tanlash kerak</div>
-      <div class="when-val">${opt.when}</div>
+      <div class="when-label">${T[L].panelWhen}</div>
+      <div class="when-val">${t(opt.when)}</div>
     </div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
+      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     ${bonusSection}
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
-      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
+      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
     </div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
-      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
+      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
         ${opt.demoUrl ? `<button class="demo-btn" onclick="window.open('${opt.demoUrl}','_blank')"><svg viewBox="0 0 20 20"><polygon points="6,3 18,10 6,17"/></svg>DEMO</button>` : ''}
@@ -1920,23 +2238,23 @@ function renderAtmPanel(optKey) {
       ${opt.badge.text}
     </span>
     <div class="when-box">
-      <div class="when-label">Qachon tanlash kerak</div>
-      <div class="when-val">${opt.when}</div>
+      <div class="when-label">${T[L].panelWhen}</div>
+      <div class="when-val">${t(opt.when)}</div>
     </div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
-    </div>
-    <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
-      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
-    </div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
-      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
+      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
+      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
+      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
     </div>
   `;
@@ -2044,15 +2362,15 @@ function renderGatewayPanel(optKey) {
   const opt = GATEWAY_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchGatewayTab(key) {
   document.querySelectorAll('.gw-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2130,15 +2448,15 @@ function renderCorpApiPanel(optKey) {
   const opt = CORP_API_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchCorpApiTab(key) {
   document.querySelectorAll('.capi-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2216,15 +2534,15 @@ function renderChatPanel(optKey) {
   const opt = CHAT_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchChatTab(key) {
   document.querySelectorAll('.chat-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2282,15 +2600,15 @@ function renderDwhPanel(optKey) {
   const opt = DWH_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchDwhTab(key) {
   document.querySelectorAll('.dwh-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2368,15 +2686,15 @@ function renderCardPanel(optKey) {
   const opt = CARD_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchCardTab(key) {
   document.querySelectorAll('.card-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2434,15 +2752,15 @@ function renderCashPanel(optKey) {
   const opt = CASH_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchCashTab(key) {
   document.querySelectorAll('.cash-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2520,15 +2838,15 @@ function renderBillingPanel(optKey) {
   const opt = BILLING_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchBillingTab(key) {
   document.querySelectorAll('.bill-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2586,15 +2904,15 @@ function renderIntlPanel(optKey) {
   const opt = INTL_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchIntlTab(key) {
   document.querySelectorAll('.intl-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2652,15 +2970,15 @@ function renderAmlPanel(optKey) {
   const opt = AML_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchAmlTab(key) {
   document.querySelectorAll('.aml-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2738,15 +3056,15 @@ function renderShariaPanel(optKey) {
   const opt = SHARIA_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchShariaTab(key) {
   document.querySelectorAll('.sharia-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2804,15 +3122,15 @@ function renderAtmMgmtPanel(optKey) {
   const opt = ATM_MGMT_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchAtmMgmtTab(key) {
   document.querySelectorAll('.atmmgmt-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2890,15 +3208,15 @@ function renderIncidentPanel(optKey) {
   const opt = INCIDENT_OPTIONS[optKey];
   const st = STATUS_META[opt.status] || STATUS_META.evaluate;
   return `<span class="abs-badge" style="color:${opt.badge.color};border-color:${opt.badge.color}55;background:${opt.badge.bg}">${opt.badge.text}</span>
-    <div class="when-box"><div class="when-label">Qachon tanlash kerak</div><div class="when-val">${opt.when}</div></div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="when-box"><div class="when-label">${T[L].panelWhen}</div><div class="when-val">${t(opt.when)}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div><ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div><ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div><ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div><ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div><ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul></div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div><ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>`;
 }
 function switchIncidentTab(key) {
   document.querySelectorAll('.inc-tab').forEach(t=>t.classList.toggle('active',t.dataset.key===key));
@@ -2914,17 +3232,16 @@ const MW_SUB_DATA = {
     label:'Orchestration / BPM',
     cat:'Middleware moduli',
     vendor:'Camunda BPM · Activiti · Avanza native BPM engine',
-    purpose:"Murakkab ko'p bosqichli bank jarayonlarini avtomatlashtiradi — financing ariza qabul qilishdan to disbursement gacha har bir qadam tartibli bajariladi. Saga pattern orqali distributed transaction xatolarini ham boshqaradi.",
-    features:[
-      'BPMN 2.0 standart — vizual jarayon dizayni',
-      'Saga pattern — distributed transaction rollback',
-      'Financing workflow: ariza → KYC → Sharia check → tasdiq → disbursement',
-      'Parallel gateway — bir vaqtda bir necha approval oqimi',
-      'Timer event — muddat o\'tsa avtomatik eslatma yoki bekor qilish',
-      'Audit trail — har bir qadam vaqt tamg\'asi bilan saqlanadi',
-      'REST API orqali tashqi tizimlar bilan integratsiya',
-      'Low-code modelling — IT bo\'lmagan xodimlar ham jarayon chiza oladi'
-    ],
+    purpose:{
+      uz:"Murakkab ko'p bosqichli bank jarayonlarini avtomatlashtiradi — financing ariza qabul qilishdan to disbursement gacha har bir qadam tartibli bajariladi. Saga pattern orqali distributed transaction xatolarini ham boshqaradi.",
+      ru:"Автоматизирует сложные многоэтапные банковские процессы — от приёма заявки на финансирование до выплаты. Управляет ошибками распределённых транзакций через паттерн Saga.",
+      en:"Automates complex multi-step banking processes — from financing application intake to disbursement. Manages distributed transaction errors via the Saga pattern."
+    },
+    features:{
+      uz:['BPMN 2.0 standart — vizual jarayon dizayni','Saga pattern — distributed transaction rollback','Financing workflow: ariza → KYC → Sharia check → tasdiq → disbursement','Parallel gateway — bir vaqtda bir necha approval oqimi',"Timer event — muddat o'tsa avtomatik eslatma yoki bekor qilish","Audit trail — har bir qadam vaqt tamg'asi bilan saqlanadi",'REST API orqali tashqi tizimlar bilan integratsiya',"Low-code modelling — IT bo'lmagan xodimlar ham jarayon chiza oladi"],
+      ru:['BPMN 2.0 — визуальное проектирование процессов','Saga pattern — откат распределённых транзакций','Financing workflow: заявка → KYC → проверка шариата → одобрение → выплата','Parallel gateway — несколько потоков одобрения одновременно','Timer event — автоматическое напоминание или отмена при истечении срока','Audit trail — каждый шаг записывается с временной меткой','Интеграция с внешними системами через REST API','Low-code моделирование — процессы могут создавать и не-IT сотрудники'],
+      en:['BPMN 2.0 standard — visual process design','Saga pattern — distributed transaction rollback','Financing workflow: application → KYC → Sharia check → approval → disbursement','Parallel gateway — multiple approval flows simultaneously','Timer event — auto reminder or cancellation on deadline','Audit trail — every step stored with timestamp','REST API integration with external systems','Low-code modelling — non-IT staff can design processes']
+    },
     connects:['Core Banking ABS','Sharia Core','AML/CFT','CRM'],
     status:'required'
   },
@@ -2932,17 +3249,16 @@ const MW_SUB_DATA = {
     label:'Message Queue',
     cat:'Middleware moduli',
     vendor:'Apache Kafka · RabbitMQ · IBM MQ',
-    purpose:"Barcha tizimlar o'rtasidagi asinxron xabarlarni ishonchli yetkazadi. Bir tizim vaqtincha ishlamay qolsa ham xabar yo'qolmaydi — keyinchalik qayta yuboriladi. Yuqori yuklanmada ham tizimni barqaror saqlaydi.",
-    features:[
-      'Kafka — yuqori throughput, millionlab xabar/soniya',
-      'RabbitMQ — murakkab routing va priority queue',
-      'Guaranteed delivery — xabar yo\'qolmaydi, kamida bir marta yetkaziladi',
-      'Dead Letter Queue — xato xabarlarni alohida saqlash',
-      'Consumer group — bir xabarni bir necha tizim parallel olishi',
-      'Event sourcing — barcha o\'zgarishlar event sifatida qayd etiladi',
-      'Schema Registry — xabar formatini versiyalash',
-      'Retry policy — xato bo\'lsa avtomatik qayta urinish'
-    ],
+    purpose:{
+      uz:"Barcha tizimlar o'rtasidagi asinxron xabarlarni ishonchli yetkazadi. Bir tizim vaqtincha ishlamay qolsa ham xabar yo'qolmaydi — keyinchalik qayta yuboriladi. Yuqori yuklanmada ham tizimni barqaror saqlaydi.",
+      ru:"Надёжно доставляет асинхронные сообщения между всеми системами. Если система временно недоступна, сообщение не теряется — оно будет отправлено позже. Обеспечивает стабильность системы при высоких нагрузках.",
+      en:"Reliably delivers asynchronous messages between all systems. If a system is temporarily down, messages are not lost — they are retried later. Keeps the system stable under high load."
+    },
+    features:{
+      uz:['Kafka — yuqori throughput, millionlab xabar/soniya','RabbitMQ — murakkab routing va priority queue',"Guaranteed delivery — xabar yo'qolmaydi, kamida bir marta yetkaziladi",'Dead Letter Queue — xato xabarlarni alohida saqlash','Consumer group — bir xabarni bir necha tizim parallel olishi',"Event sourcing — barcha o'zgarishlar event sifatida qayd etiladi",'Schema Registry — xabar formatini versiyalash',"Retry policy — xato bo'lsa avtomatik qayta urinish"],
+      ru:['Kafka — высокая пропускная способность, миллионы сообщений/с','RabbitMQ — сложная маршрутизация и priority queue','Guaranteed delivery — сообщение не теряется, доставляется минимум один раз','Dead Letter Queue — отдельное хранение ошибочных сообщений','Consumer group — одно сообщение получают несколько систем параллельно','Event sourcing — все изменения записываются как события','Schema Registry — версионирование формата сообщений','Retry policy — автоматический повтор при ошибке'],
+      en:['Kafka — high throughput, millions of messages/second','RabbitMQ — complex routing and priority queue','Guaranteed delivery — messages not lost, delivered at least once','Dead Letter Queue — failed messages stored separately','Consumer group — multiple systems receive one message in parallel','Event sourcing — all changes recorded as events','Schema Registry — message format versioning','Retry policy — automatic retry on failure']
+    },
     connects:['Barcha Middleware modullari','DWH & BI (stream)','Core Banking'],
     status:'required'
   },
@@ -2950,17 +3266,16 @@ const MW_SUB_DATA = {
     label:'DR / Failover',
     cat:'Middleware moduli',
     vendor:'Active-Active cluster · Keepalived · HAProxy · Patroni (PostgreSQL)',
-    purpose:"Asosiy server yoki datacenter ishlamay qolsa tizim avtomatik ravishda zaxira serverga ko'chadi. Bank operatsiyalari uzilishsiz davom etadi. Maqsad: 99.99% uptime — yiliga 52 daqiqadan kam to'xtash.",
-    features:[
-      'Active-Active cluster — ikkala server bir vaqtda ishlab turadi',
-      'RTO < 30 soniya — nosozlikdan keyingi tiklash vaqti',
-      'RPO = 0 — ma\'lumot yo\'qolmaydi (sinxron replikatsiya)',
-      'Geografik DR — Toshkent + Samarqand datacenter',
-      'Heartbeat monitoring — server holati har 5 sekundda tekshiriladi',
-      'Avtomatik failover — odam aralashuvisiz almashtirish',
-      'Failback procedure — asosiy server tuzalsa qaytish tartibi',
-      'Quarterly DR drill — har chorakda sinov o\'tkazish'
-    ],
+    purpose:{
+      uz:"Asosiy server yoki datacenter ishlamay qolsa tizim avtomatik ravishda zaxira serverga ko'chadi. Bank operatsiyalari uzilishsiz davom etadi. Maqsad: 99.99% uptime — yiliga 52 daqiqadan kam to'xtash.",
+      ru:"При выходе из строя основного сервера или ЦОД система автоматически переходит на резервный. Банковские операции продолжаются без перебоев. Цель: 99,99% uptime — менее 52 минут простоя в год.",
+      en:"If the primary server or datacenter fails, the system automatically switches to the backup. Banking operations continue uninterrupted. Target: 99.99% uptime — less than 52 minutes of downtime per year."
+    },
+    features:{
+      uz:['Active-Active cluster — ikkala server bir vaqtda ishlab turadi','RTO < 30 soniya — nosozlikdan keyingi tiklash vaqti',"RPO = 0 — ma'lumot yo'qolmaydi (sinxron replikatsiya)",'Geografik DR — Toshkent + Samarqand datacenter','Heartbeat monitoring — server holati har 5 sekundda tekshiriladi',"Avtomatik failover — odam aralashuvisiz almashtirish",'Failback procedure — asosiy server tuzalsa qaytish tartibi',"Quarterly DR drill — har chorakda sinov o'tkazish"],
+      ru:['Active-Active кластер — оба сервера работают одновременно','RTO < 30 секунд — время восстановления после сбоя','RPO = 0 — данные не теряются (синхронная репликация)','Географическое DR — ЦОД в Ташкенте + Самарканде','Heartbeat monitoring — состояние сервера проверяется каждые 5 секунд','Автоматический failover — переключение без вмешательства человека','Процедура failback — порядок возврата при восстановлении основного сервера','Квартальные DR-учения — тестирование каждый квартал'],
+      en:['Active-Active cluster — both servers running simultaneously','RTO < 30 seconds — recovery time after failure','RPO = 0 — no data loss (synchronous replication)','Geographic DR — Tashkent + Samarkand datacenters','Heartbeat monitoring — server status checked every 5 seconds','Automatic failover — switching without human intervention','Failback procedure — return order when primary recovers','Quarterly DR drill — testing every quarter']
+    },
     connects:['Barcha Middleware komponentlari','Core Banking','Card Mgmt'],
     status:'required'
   },
@@ -2968,17 +3283,16 @@ const MW_SUB_DATA = {
     label:'Monitoring / APM',
     cat:'Middleware moduli',
     vendor:'Grafana + Prometheus · Elastic APM · Datadog',
-    purpose:"Barcha tizimlarning real-time holati, tranzaksiya tezligi va xatolarini kuzatadi. Muammo yuzaga kelsa tegishli mutaxassisga darhol xabar beradi. SLA bajarilishini o'lchaydi.",
-    features:[
-      'Grafana dashboard — real-time infratuzilma holati',
-      'Prometheus — metric yig\'ish va alerting qoidalari',
-      'Distributed tracing — bitta tranzaksiya barcha tizimlarda kuzatiladi',
-      'SLA monitoring — 99.99% uptime maqsadiga nisbatan o\'lchash',
-      'TPS (Transactions Per Second) real-time grafik',
-      'Latency percentile — P95, P99 javob vaqti',
-      'Log aggregation — ELK Stack (Elasticsearch, Logstash, Kibana)',
-      'PagerDuty integratsiya — on-call mutaxassisga SMS/call'
-    ],
+    purpose:{
+      uz:"Barcha tizimlarning real-time holati, tranzaksiya tezligi va xatolarini kuzatadi. Muammo yuzaga kelsa tegishli mutaxassisga darhol xabar beradi. SLA bajarilishini o'lchaydi.",
+      ru:"Отслеживает состояние всех систем, скорость транзакций и ошибки в реальном времени. При возникновении проблемы немедленно уведомляет ответственного специалиста. Измеряет соблюдение SLA.",
+      en:"Monitors the real-time state, transaction speed and errors of all systems. Immediately alerts the responsible specialist when an issue occurs. Measures SLA compliance."
+    },
+    features:{
+      uz:['Grafana dashboard — real-time infratuzilma holati',"Prometheus — metric yig'ish va alerting qoidalari",'Distributed tracing — bitta tranzaksiya barcha tizimlarda kuzatiladi',"SLA monitoring — 99.99% uptime maqsadiga nisbatan o'lchash",'TPS (Transactions Per Second) real-time grafik','Latency percentile — P95, P99 javob vaqti','Log aggregation — ELK Stack (Elasticsearch, Logstash, Kibana)','PagerDuty integratsiya — on-call mutaxassisga SMS/call'],
+      ru:['Grafana dashboard — состояние инфраструктуры в реальном времени','Prometheus — сбор метрик и правила оповещений','Distributed tracing — отслеживание транзакции во всех системах','Мониторинг SLA — измерение относительно цели 99,99% uptime','TPS (транзакций в секунду) — график в реальном времени','Перцентили задержки — P95, P99 времени отклика','Агрегация логов — ELK Stack (Elasticsearch, Logstash, Kibana)','Интеграция PagerDuty — SMS/звонок on-call специалисту'],
+      en:['Grafana dashboard — real-time infrastructure state','Prometheus — metric collection and alerting rules','Distributed tracing — single transaction tracked across all systems','SLA monitoring — measured against 99.99% uptime target','TPS (Transactions Per Second) real-time chart','Latency percentile — P95, P99 response time','Log aggregation — ELK Stack (Elasticsearch, Logstash, Kibana)','PagerDuty integration — SMS/call to on-call specialist']
+    },
     connects:['Barcha tizimlar','Incident ITIL','DR / Failover'],
     status:'required'
   },
@@ -2986,17 +3300,16 @@ const MW_SUB_DATA = {
     label:'Integration Hub',
     cat:'Middleware moduli',
     vendor:'Avanza Rendezvous adapter framework · MuleSoft · Apache Camel',
-    purpose:"Har xil protokol va format bilan ishlaydigan tizimlarni bir-biriga ulaydi. REST, SOAP, ISO 8583, SWIFT MT, ISO 20022 — barchasini o'zaro tarjima qiladi. Yangi tizim qo'shish markaziy joydan boshqariladi.",
-    features:[
-      '100+ tayyor banking adapter — Core Banking, Swift, Uzcard va boshqalar',
-      'Protocol mediation: REST ↔ SOAP ↔ ISO 8583 ↔ ISO 20022',
-      'Data transformation — XML, JSON, FIX, SWIFT MT formatlar',
-      'API versioning — eski va yangi API bir vaqtda ishlaydi',
-      'Throttling — tashqi tizimga chiquvchi so\'rovlarni cheklash',
-      'Circuit breaker — tashqi tizim ishlamasa tezda to\'xtatish',
-      'Canonical data model — tizimlar o\'rtasida yagona format',
-      'Connector marketplace — yangi adapter qo\'shish low-code'
-    ],
+    purpose:{
+      uz:"Har xil protokol va format bilan ishlaydigan tizimlarni bir-biriga ulaydi. REST, SOAP, ISO 8583, SWIFT MT, ISO 20022 — barchasini o'zaro tarjima qiladi. Yangi tizim qo'shish markaziy joydan boshqariladi.",
+      ru:"Связывает системы с разными протоколами и форматами. Транслирует между REST, SOAP, ISO 8583, SWIFT MT, ISO 20022. Добавление новых систем управляется централизованно.",
+      en:"Connects systems that use different protocols and formats. Translates between REST, SOAP, ISO 8583, SWIFT MT, ISO 20022. Adding new systems is managed centrally."
+    },
+    features:{
+      uz:['100+ tayyor banking adapter — Core Banking, Swift, Uzcard va boshqalar','Protocol mediation: REST ↔ SOAP ↔ ISO 8583 ↔ ISO 20022','Data transformation — XML, JSON, FIX, SWIFT MT formatlar','API versioning — eski va yangi API bir vaqtda ishlaydi',"Throttling — tashqi tizimga chiquvchi so'rovlarni cheklash","Circuit breaker — tashqi tizim ishlamasa tezda to'xtatish","Canonical data model — tizimlar o'rtasida yagona format","Connector marketplace — yangi adapter qo'shish low-code"],
+      ru:['100+ готовых банковских адаптеров — Core Banking, Swift, Uzcard и др.','Медиация протоколов: REST ↔ SOAP ↔ ISO 8583 ↔ ISO 20022','Трансформация данных — форматы XML, JSON, FIX, SWIFT MT','Версионирование API — старый и новый API работают одновременно','Throttling — ограничение исходящих запросов к внешней системе','Circuit breaker — быстрое отключение при недоступности внешней системы','Канонический формат данных — единый формат между системами','Marketplace коннекторов — добавление новых адаптеров low-code'],
+      en:['100+ ready banking adapters — Core Banking, Swift, Uzcard and more','Protocol mediation: REST ↔ SOAP ↔ ISO 8583 ↔ ISO 20022','Data transformation — XML, JSON, FIX, SWIFT MT formats','API versioning — old and new API run simultaneously','Throttling — limit outgoing requests to external systems','Circuit breaker — fast shutdown when external system is down','Canonical data model — unified format between systems','Connector marketplace — adding new adapters low-code']
+    },
     connects:['Barcha ichki va tashqi tizimlar','API Gateway','Message Queue'],
     status:'required'
   },
@@ -3004,17 +3317,16 @@ const MW_SUB_DATA = {
     label:'Env Management',
     cat:'Middleware moduli',
     vendor:'Kubernetes · Docker · Helm · ArgoCD · Terraform',
-    purpose:"Barcha dasturiy muhitlarni (development, test, staging, production) tartibli boshqaradi. Yangi versiya chiqarishda xavfsiz, tezkor va qaytarib bo'ladigan deployment ta'minlaydi.",
-    features:[
-      'Kubernetes — containerlarni orkestratsiya qilish',
-      'Helm chart — bank dasturlari uchun deployment shablonlar',
-      'ArgoCD — GitOps asosida avtomatik deployment',
-      'Blue-Green deployment — nol vaqt to\'xtatib versiya yangilash',
-      'Canary release — yangi versiyani avval 5% trafikka sinovdan o\'tkazish',
-      'Config management — har bir muhit uchun alohida sozlamalar',
-      'Secrets management — HashiCorp Vault (parol va kalitlar)',
-      'Infrastructure as Code — Terraform bilan infra versiyalanadi'
-    ],
+    purpose:{
+      uz:"Barcha dasturiy muhitlarni (development, test, staging, production) tartibli boshqaradi. Yangi versiya chiqarishda xavfsiz, tezkor va qaytarib bo'ladigan deployment ta'minlaydi.",
+      ru:"Управляет всеми программными средами (development, test, staging, production). Обеспечивает безопасное, быстрое и откатываемое развёртывание при выпуске новых версий.",
+      en:"Manages all software environments (development, test, staging, production). Ensures safe, fast and rollback-capable deployments when releasing new versions."
+    },
+    features:{
+      uz:['Kubernetes — containerlarni orkestratsiya qilish','Helm chart — bank dasturlari uchun deployment shablonlar','ArgoCD — GitOps asosida avtomatik deployment',"Blue-Green deployment — nol vaqt to'xtatib versiya yangilash","Canary release — yangi versiyani avval 5% trafikka sinovdan o'tkazish",'Config management — har bir muhit uchun alohida sozlamalar','Secrets management — HashiCorp Vault (parol va kalitlar)','Infrastructure as Code — Terraform bilan infra versiyalanadi'],
+      ru:['Kubernetes — оркестрация контейнеров','Helm chart — шаблоны развёртывания банковских приложений','ArgoCD — автоматическое развёртывание на основе GitOps','Blue-Green deployment — обновление версии без простоя','Canary release — тестирование новой версии на 5% трафика','Config management — отдельные настройки для каждой среды','Secrets management — HashiCorp Vault (пароли и ключи)','Infrastructure as Code — инфраструктура версионируется с Terraform'],
+      en:['Kubernetes — container orchestration','Helm chart — deployment templates for banking apps','ArgoCD — automatic deployment based on GitOps','Blue-Green deployment — version update with zero downtime','Canary release — test new version on 5% of traffic first','Config management — separate settings per environment','Secrets management — HashiCorp Vault (passwords and keys)','Infrastructure as Code — infra versioned with Terraform']
+    },
     connects:['Barcha Middleware komponentlari','Monitoring / APM','DR / Failover'],
     status:'required'
   },
@@ -3022,17 +3334,16 @@ const MW_SUB_DATA = {
     label:'Version Control',
     cat:'Middleware moduli',
     vendor:'GitLab (self-hosted) · GitHub Enterprise · Bitbucket',
-    purpose:"Barcha kod, konfiguratsiya va infratuzilma o'zgarishlari versiyalanadi. Kim, qachon, nima o'zgartirganini ko'rish mumkin. CI/CD pipeline orqali testlash va chiqarish avtomatlashtiriladi.",
-    features:[
-      'GitLab CE — bank serverida o\'zi joylashtirilgan (on-premise)',
-      'Branch strategy — main, develop, feature, hotfix tarmoqlari',
-      'Merge Request + Code Review — ikki ko\'z ko\'rmasdan merge yo\'q',
-      'CI/CD pipeline — commit kelsa avtomatik test va build',
-      'SAST/DAST — kod xavfsizligini avtomatik tekshirish',
-      'Artifact registry — Docker image va Helm chart saqlash',
-      'Audit log — kim qachon nima o\'zgartirganining to\'liq tarixi',
-      'GitOps — ArgoCD bilan birgalikda deployment avtomatlashtiriladi'
-    ],
+    purpose:{
+      uz:"Barcha kod, konfiguratsiya va infratuzilma o'zgarishlari versiyalanadi. Kim, qachon, nima o'zgartirganini ko'rish mumkin. CI/CD pipeline orqali testlash va chiqarish avtomatlashtiriladi.",
+      ru:"Версионируются все изменения кода, конфигурации и инфраструктуры. Видно, кто, когда и что изменил. Тестирование и выпуск автоматизированы через CI/CD pipeline.",
+      en:"All code, configuration and infrastructure changes are versioned. You can see who changed what and when. Testing and releasing are automated via CI/CD pipeline."
+    },
+    features:{
+      uz:["GitLab CE — bank serverida o'zi joylashtirilgan (on-premise)",'Branch strategy — main, develop, feature, hotfix tarmoqlari',"Merge Request + Code Review — ikki ko'z ko'rmasdan merge yo'q",'CI/CD pipeline — commit kelsa avtomatik test va build','SAST/DAST — kod xavfsizligini avtomatik tekshirish','Artifact registry — Docker image va Helm chart saqlash',"Audit log — kim qachon nima o'zgartirganining to'liq tarixi",'GitOps — ArgoCD bilan birgalikda deployment avtomatlashtiriladi'],
+      ru:['GitLab CE — размещён на серверах банка (on-premise)','Branch strategy — ветки main, develop, feature, hotfix','Merge Request + Code Review — слияние только после двух проверок','CI/CD pipeline — автоматический тест и сборка при каждом коммите','SAST/DAST — автоматическая проверка безопасности кода','Artifact registry — хранение Docker image и Helm chart','Audit log — полная история изменений: кто, когда, что','GitOps — развёртывание автоматизировано совместно с ArgoCD'],
+      en:['GitLab CE — self-hosted on bank servers (on-premise)','Branch strategy — main, develop, feature, hotfix branches','Merge Request + Code Review — no merge without two reviews','CI/CD pipeline — automatic test and build on each commit','SAST/DAST — automatic code security scanning','Artifact registry — Docker image and Helm chart storage','Audit log — full change history: who, when, what','GitOps — deployment automated together with ArgoCD']
+    },
     connects:['Env Management','Monitoring / APM','Incident ITIL'],
     status:'required'
   },
@@ -3040,17 +3351,16 @@ const MW_SUB_DATA = {
     label:'SAF / STIP',
     cat:'Middleware moduli',
     vendor:'Avanza Rendezvous SAF modul · Mastercard STIP · Visa SMS',
-    purpose:"Core Banking yoki tarmoq o'chib qolsa ham ATM va POS terminallari ishlashda davom etadi. SAF (Store and Forward) tranzaksiyani vaqtincha saqlaydi, STIP esa standart limitlar asosida avtomatik tasdiq beradi.",
-    features:[
-      'SAF — offline tranzaksiyani saqlash, Core online bo\'lganda yuborish',
-      'STIP — offline avtorizatsiya: limit, karta holati, PIN tekshirish',
-      'Floor limit — belgilangan summagacha online tasdiqsiz o\'tkazish',
-      'Negative file — bloklangan kartalar ro\'yxati lokal saqlanadi',
-      'Velocity check — qisqa vaqtda juda ko\'p tranzaksiyani bloklash',
-      'Reconciliation — online bo\'lganda saqlangan tranzaksiyalar yuboriladi',
-      'Risk scoring — offline rejimda ham fraud pattern tekshiruvi',
-      'Audit trail — SAF/STIP orqali o\'tgan barcha tranzaksiyalar qayd etiladi'
-    ],
+    purpose:{
+      uz:"Core Banking yoki tarmoq o'chib qolsa ham ATM va POS terminallari ishlashda davom etadi. SAF (Store and Forward) tranzaksiyani vaqtincha saqlaydi, STIP esa standart limitlar asosida avtomatik tasdiq beradi.",
+      ru:"Банкоматы и POS-терминалы продолжают работать даже при отключении Core Banking или сети. SAF (Store and Forward) временно сохраняет транзакции, STIP автоматически авторизует по стандартным лимитам.",
+      en:"ATMs and POS terminals continue to operate even if Core Banking or the network goes down. SAF (Store and Forward) temporarily stores transactions, STIP auto-approves based on standard limits."
+    },
+    features:{
+      uz:["SAF — offline tranzaksiyani saqlash, Core online bo'lganda yuborish",'STIP — offline avtorizatsiya: limit, karta holati, PIN tekshirish',"Floor limit — belgilangan summagacha online tasdiqsiz o'tkazish","Negative file — bloklangan kartalar ro'yxati lokal saqlanadi","Velocity check — qisqa vaqtda juda ko'p tranzaksiyani bloklash","Reconciliation — online bo'lganda saqlangan tranzaksiyalar yuboriladi",'Risk scoring — offline rejimda ham fraud pattern tekshiruvi',"Audit trail — SAF/STIP orqali o'tgan barcha tranzaksiyalar qayd etiladi"],
+      ru:['SAF — хранение offline транзакций, отправка при восстановлении Core','STIP — offline авторизация: лимит, статус карты, проверка PIN','Floor limit — проведение до установленной суммы без online авторизации','Negative file — список заблокированных карт хранится локально','Velocity check — блокировка при слишком большом числе транзакций за короткий период','Reconciliation — отправка сохранённых транзакций при восстановлении связи','Risk scoring — проверка паттернов мошенничества и в offline-режиме','Audit trail — запись всех транзакций, прошедших через SAF/STIP'],
+      en:['SAF — store offline transactions, send when Core comes back online','STIP — offline authorization: limit, card status, PIN check','Floor limit — process up to set amount without online approval','Negative file — blocked card list stored locally','Velocity check — block excessive transactions in short time','Reconciliation — send stored transactions when connection restored','Risk scoring — fraud pattern checking even in offline mode','Audit trail — all SAF/STIP transactions recorded']
+    },
     connects:['ATM/POS channel','Card Mgmt','Core Banking ABS'],
     status:'required'
   }
@@ -3064,15 +3374,15 @@ function openSubPanel(subId) {
 
   document.getElementById('pName').textContent = d.label;
   const pCat = document.getElementById('pCat');
-  pCat.textContent = d.cat;
+  pCat.textContent = T[L].catMwModule;
   pCat.style.color       = '#9D98E8';
   pCat.style.borderColor = 'rgba(108,99,212,.4)';
   pCat.style.background  = 'rgba(108,99,212,.08)';
 
   document.getElementById('pVendor').textContent  = d.vendor;
-  document.getElementById('pPurpose').textContent = d.purpose;
-  document.getElementById('pFeatures').innerHTML  = d.features.map(f=>`<li>${f}</li>`).join('');
-  document.getElementById('pConnects').innerHTML  = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+  document.getElementById('pPurpose').textContent = t(d.purpose);
+  document.getElementById('pFeatures').innerHTML  = t(d.features).map(f=>`<li>${f}</li>`).join('');
+  document.getElementById('pConnects').innerHTML  = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
   const demoBtn = subId === 'bpm'
     ? `<a href="orchestration.html" target="_blank" class="orch-demo-btn" style="display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:5px 14px;border-radius:4px;font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;cursor:pointer;border:1px solid rgba(22,132,94,.55);background:rgba(22,132,94,.13);color:#4DB893;text-decoration:none;transition:all .18s;" onmouseover="this.style.background='rgba(22,132,94,.28)';this.style.borderColor='rgba(22,132,94,.9)'" onmouseout="this.style.background='rgba(22,132,94,.13)';this.style.borderColor='rgba(22,132,94,.55)'">&#9654; DEMO</a>`
     : '';
@@ -3113,23 +3423,23 @@ function renderMwPanel(optKey) {
       ${opt.badge.text}
     </span>
     <div class="when-box">
-      <div class="when-label">Qachon tanlash kerak</div>
-      <div class="when-val">${opt.when}</div>
+      <div class="when-label">${T[L].panelWhen}</div>
+      <div class="when-val">${t(opt.when)}</div>
     </div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
-    </div>
-    <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
-      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
-    </div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
-      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
+      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
+      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
+      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
     </div>
   `;
@@ -3151,23 +3461,23 @@ function renderAbsPanel(optKey) {
       ${opt.badge.text}
     </span>
     <div class="when-box">
-      <div class="when-label">Qachon tanlash kerak</div>
-      <div class="when-val">${opt.when}</div>
+      <div class="when-label">${T[L].panelWhen}</div>
+      <div class="when-val">${t(opt.when)}</div>
     </div>
-    <div class="prow"><div class="prow-lbl">Vendor</div><div class="prow-val mono">${opt.vendor}</div></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelVendor}</div><div class="prow-val mono">${opt.vendor}</div></div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Asosiy xususiyatlar</div>
-      <ul class="feat-list">${opt.features.map(f=>`<li>${f}</li>`).join('')}</ul>
-    </div>
-    <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Afzalliklari</div>
-      <ul class="feat-list">${opt.pros.map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
-    </div>
-    <div class="prow" style="margin-top:8px"><div class="prow-lbl">Kamchiliklari</div>
-      <ul class="feat-list">${opt.cons.map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    <div class="prow"><div class="prow-lbl">${T[L].panelFeatures}</div>
+      <ul class="feat-list">${t(opt.features).map(f=>`<li>${f}</li>`).join('')}</ul>
     </div>
     <div class="divider" style="margin:10px -20px"></div>
-    <div class="prow"><div class="prow-lbl">Holat</div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelPros}</div>
+      <ul class="feat-list">${t(opt.pros).map(f=>`<li style="color:var(--green-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="prow" style="margin-top:8px"><div class="prow-lbl">${T[L].panelCons}</div>
+      <ul class="feat-list">${t(opt.cons).map(f=>`<li style="color:var(--amber-l)">${f}</li>`).join('')}</ul>
+    </div>
+    <div class="divider" style="margin:10px -20px"></div>
+    <div class="prow"><div class="prow-lbl">${T[L].panelStatus}</div>
       <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
     </div>
   `;
@@ -3196,11 +3506,11 @@ function openPanel(id) {
   if (d.mwOption) {
     // Middleware vendor tabs
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pPurpose').textContent = t(d.purpose);
     document.getElementById('pFeatures').innerHTML =
-      d.features.map(f => `<li>${f}</li>`).join('');
+      t(d.features).map(f => `<li>${f}</li>`).join('');
     document.getElementById('pConnects').innerHTML =
-      d.connects.map(c => `<span class="chip">${c}</span>`).join('');
+      t(d.connects).map(c => `<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
@@ -3217,11 +3527,11 @@ function openPanel(id) {
   } else if (d.crmOption) {
     // CRM multi-option rendering
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pPurpose').textContent = t(d.purpose);
     document.getElementById('pFeatures').innerHTML =
-      d.features.map(f => `<li>${f}</li>`).join('');
+      t(d.features).map(f => `<li>${f}</li>`).join('');
     document.getElementById('pConnects').innerHTML =
-      d.connects.map(c => `<span class="chip">${c}</span>`).join('');
+      t(d.connects).map(c => `<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
@@ -3238,11 +3548,11 @@ function openPanel(id) {
   } else if (d.mobileOption) {
     // Mobile App multi-option rendering
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pPurpose').textContent = t(d.purpose);
     document.getElementById('pFeatures').innerHTML =
-      d.features.map(f => `<li>${f}</li>`).join('');
+      t(d.features).map(f => `<li>${f}</li>`).join('');
     document.getElementById('pConnects').innerHTML =
-      d.connects.map(c => `<span class="chip">${c}</span>`).join('');
+      t(d.connects).map(c => `<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
@@ -3259,11 +3569,11 @@ function openPanel(id) {
   } else if (d.webOption) {
     // Web Portal multi-option rendering
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pPurpose').textContent = t(d.purpose);
     document.getElementById('pFeatures').innerHTML =
-      d.features.map(f => `<li>${f}</li>`).join('');
+      t(d.features).map(f => `<li>${f}</li>`).join('');
     document.getElementById('pConnects').innerHTML =
-      d.connects.map(c => `<span class="chip">${c}</span>`).join('');
+      t(d.connects).map(c => `<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
@@ -3280,11 +3590,11 @@ function openPanel(id) {
   } else if (d.atmOption) {
     // ATM/POS multi-option rendering
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pPurpose').textContent = t(d.purpose);
     document.getElementById('pFeatures').innerHTML =
-      d.features.map(f => `<li>${f}</li>`).join('');
+      t(d.features).map(f => `<li>${f}</li>`).join('');
     document.getElementById('pConnects').innerHTML =
-      d.connects.map(c => `<span class="chip">${c}</span>`).join('');
+      t(d.connects).map(c => `<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
@@ -3298,9 +3608,9 @@ function openPanel(id) {
        <div class="abs-panel atm-panel"        data-key="diebold" id="atm-content-diebold"></div>`;
   } else if (d.gatewayOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3314,9 +3624,9 @@ function openPanel(id) {
        <div class="abs-panel gw-panel"        data-key="nginx" id="gw-content-nginx"></div>`;
   } else if (d.corpApiOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3330,9 +3640,9 @@ function openPanel(id) {
        <div class="abs-panel capi-panel"        data-key="custom"  id="capi-content-custom"></div>`;
   } else if (d.chatOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VARIANT TAQQOSLASH</div>
@@ -3346,9 +3656,9 @@ function openPanel(id) {
        <div class="abs-panel chat-panel"        data-key="ai_chat"  id="chat-content-ai_chat"></div>`;
   } else if (d.dwhOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VARIANT TAQQOSLASH</div>
@@ -3360,9 +3670,9 @@ function openPanel(id) {
        <div class="abs-panel dwh-panel"        data-key="snowflake"  id="dwh-content-snowflake"></div>`;
   } else if (d.cardOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3376,9 +3686,9 @@ function openPanel(id) {
        <div class="abs-panel card-panel"        data-key="ts2"    id="card-content-ts2"></div>`;
   } else if (d.cashOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3390,9 +3700,9 @@ function openPanel(id) {
        <div class="abs-panel cash-panel"        data-key="ibs"  id="cash-content-ibs"></div>`;
   } else if (d.billingOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3406,9 +3716,9 @@ function openPanel(id) {
        <div class="abs-panel bill-panel"        data-key="inhouse" id="bill-content-inhouse"></div>`;
   } else if (d.intlOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3420,9 +3730,9 @@ function openPanel(id) {
        <div class="abs-panel intl-panel"        data-key="finastra" id="intl-content-finastra"></div>`;
   } else if (d.hrmsOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
@@ -3438,9 +3748,9 @@ function openPanel(id) {
        <div class="abs-panel hrms-panel"        data-key="inhouse" id="hrms-content-inhouse"></div>`;
   } else if (d.amlOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3452,9 +3762,9 @@ function openPanel(id) {
        <div class="abs-panel aml-panel"        data-key="oracle"   id="aml-content-oracle"></div>`;
   } else if (d.shariaOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3468,9 +3778,9 @@ function openPanel(id) {
        <div class="abs-panel sharia-panel"        data-key="inhouse" id="sharia-content-inhouse"></div>`;
   } else if (d.atmMgmtOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3482,9 +3792,9 @@ function openPanel(id) {
        <div class="abs-panel atmmgmt-panel"        data-key="ncr_activate" id="atmmgmt-content-ncr_activate"></div>`;
   } else if (d.incidentOption) {
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
-    document.getElementById('pFeatures').innerHTML = d.features.map(f=>`<li>${f}</li>`).join('');
-    document.getElementById('pConnects').innerHTML = d.connects.map(c=>`<span class="chip">${c}</span>`).join('');
+    document.getElementById('pPurpose').textContent = t(d.purpose);
+    document.getElementById('pFeatures').innerHTML = t(d.features).map(f=>`<li>${f}</li>`).join('');
+    document.getElementById('pConnects').innerHTML = t(d.connects).map(c=>`<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px"><span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span></div>
        <div class="prow-lbl" style="margin-bottom:8px">VENDOR TAQQOSLASH</div>
@@ -3499,11 +3809,11 @@ function openPanel(id) {
   } else if (d.multiOption) {
     // Special multi-option rendering for ABS (Core Banking)
     document.getElementById('pVendor').textContent = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pPurpose').textContent = t(d.purpose);
     document.getElementById('pFeatures').innerHTML =
-      d.features.map(f => `<li>${f}</li>`).join('');
+      t(d.features).map(f => `<li>${f}</li>`).join('');
     document.getElementById('pConnects').innerHTML =
-      d.connects.map(c => `<span class="chip">${c}</span>`).join('');
+      t(d.connects).map(c => `<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<div style="margin-bottom:12px">
         <span class="status-badge" style="color:${st.light};border-color:${st.color}44;background:${st.bg}">${st.label}</span>
@@ -3519,11 +3829,11 @@ function openPanel(id) {
        <div class="abs-panel" data-key="B2"   id="abs-content-B2"></div>`;
   } else {
     document.getElementById('pVendor').textContent  = d.vendor;
-    document.getElementById('pPurpose').textContent = d.purpose;
+    document.getElementById('pPurpose').textContent = t(d.purpose);
     document.getElementById('pFeatures').innerHTML =
-      d.features.map(f => `<li>${f}</li>`).join('');
+      t(d.features).map(f => `<li>${f}</li>`).join('');
     document.getElementById('pConnects').innerHTML =
-      d.connects.map(c => `<span class="chip">${c}</span>`).join('');
+      t(d.connects).map(c => `<span class="chip">${c}</span>`).join('');
     document.getElementById('pStatus').innerHTML =
       `<span class="status-badge"
          style="color:${st.light};border-color:${st.color}44;background:${st.bg}">
@@ -3608,15 +3918,47 @@ document.addEventListener('keydown', e => {
 /* ════════════════════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════════════════════ */
+function applyUI() {
+  // Filter buttons
+  const fb = document.getElementById('fb-all');
+  if (fb) fb.textContent = T[L].filterAll;
+  const fi = document.getElementById('fb-internal');
+  if (fi) fi.textContent = T[L].filterInternal;
+  const fe = document.getElementById('fb-external');
+  if (fe) fe.textContent = T[L].filterExternal;
+  const fc = document.getElementById('fb-compliance');
+  if (fc) fc.textContent = T[L].filterCompliance;
+  const fch = document.getElementById('fb-channel');
+  if (fch) fch.textContent = T[L].filterChannel;
+  // Panel labels
+  const lv = document.getElementById('lbl-vendor');   if (lv) lv.textContent = T[L].panelVendor;
+  const lp = document.getElementById('lbl-purpose');  if (lp) lp.textContent = T[L].panelPurpose;
+  const lf = document.getElementById('lbl-features'); if (lf) lf.textContent = T[L].panelFeatures;
+  const lc = document.getElementById('lbl-connects'); if (lc) lc.textContent = T[L].panelConnects;
+  const ls = document.getElementById('lbl-status');   if (ls) ls.textContent = T[L].panelStatus;
+  // Footer
+  const footer = document.getElementById('footer-by');
+  if (footer) footer.textContent = T[L].footerBy;
+  // Page title
+  document.title = T[L].pageTitle;
+  // AS-IS button
+  const asisbtn = document.querySelector('.logo-badge-btn');
+  if (asisbtn) asisbtn.textContent = T[L].btnAsis;
+  // Lang switcher active
+  document.querySelectorAll('.lang-sw button').forEach(b => b.classList.toggle('active', b.dataset.lang === L));
+}
+
 buildNodes();
 buildConnectors();
 buildAnnotations();
+buildLegend();
+applyUI();
 scaleCanvas();
 window.addEventListener('resize', scaleCanvas);
 </script>
 
 <footer class="site-footer">
-  <span class="footer-by">Zokirov Bobur tomonidan</span>
+  <span class="footer-by" id="footer-by">Zokirov Bobur tomonidan</span>
   <span class="footer-sep">·</span>
   <a href="https://t.me/zokirovbobur" target="_blank" class="footer-link footer-tg">Telegram</a>
   <span class="footer-sep">·</span>
