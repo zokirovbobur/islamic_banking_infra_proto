@@ -3951,10 +3951,11 @@ function applyUI() {
 buildNodes();
 buildConnectors();
 buildAnnotations();
-buildLegend();
 applyUI();
 scaleCanvas();
 window.addEventListener('resize', scaleCanvas);
+// Footer script dan keyin DOM ga qo'shiladi — qayta chaqirish kerak
+document.addEventListener('DOMContentLoaded', applyUI);
 </script>
 
 <footer class="site-footer">
